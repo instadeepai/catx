@@ -1,0 +1,71 @@
+site_name: CATX
+site_description: CATX Documentation
+site_author: CATX Contributors
+site_url: https://instadeep.gitlab.io/mkdocs
+#site_url: https://catx.readthedocs.io/
+site_dir: public
+repo_name: instadeep/catx
+repo_url: https://gitlab.com/instadeep/catx
+#repo_url: https://github.com/instadeep/catx
+strict: false # Don't allow warnings during the build process
+
+
+theme:
+  name: material
+  language: en
+  palette:
+    # Light mode / dark mode
+    # We deliberately don't automatically use `media` to check a user's preferences. We default to light mode as
+    # (a) it looks more professional, and (b) is more obvious about the fact that it offers a dark mode (as there is a toggle).
+    - scheme: default
+      primary: white
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  logo: img/catx_logo.png
+  favicon: img/catx_logo.png
+  icon:
+    repo: fontawesome/brands/gitlab
+  features:
+    - navigation.tracking
+    - navigation.tabs
+    - toc.integrate
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        docstring_style: google
+        selection:
+          inherited_members: true  # Allow looking up inherited methods
+          filters:
+            - '!^test'
+            - "!^_"  # exclude all members starting with _
+            - "^__init__$"  # but always include __init__ modules and methods
+        rendering:
+          show_source: false # don't include source code (too cumbersome)
+          members_order: source  # order methods according to their order of definition in the source code, not alphabetical order
+
+# Strategy: Use an absolute path
+markdown_extensions:
+  - pymdownx.pathconverter:
+      base_path: 'catx' # default: ''
+      relative_path: '' # default ''
+      absolute: false # default: false
+      tags: 'a script img link object embed'
+
+nav:
+  - Home: index.md
+  - Algorithm: artifacts/algo_catx_embed.md
+  - API Reference:
+      - tree: api/tree.md
+      - catx: api/catx.md
+      - network builder: api/network_builder.md

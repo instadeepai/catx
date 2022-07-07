@@ -1,0 +1,11 @@
+# This is an environment for running git commands and other tools locally.
+name: catx
+channels:
+  - default
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - -r requirements.txt
+      - -r requirements-test.txt
+      - -r requirements-tool.txt

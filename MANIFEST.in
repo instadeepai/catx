@@ -1,0 +1,6 @@
+include LICENSE
+include HISTORY.md
+include README.md
+include Dockerfile
+graft tests
+graft catx
