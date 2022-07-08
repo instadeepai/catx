@@ -1,12 +1,10 @@
 site_name: CATX
 site_description: CATX Documentation
 site_author: CATX Contributors
-site_url: https://instadeep.gitlab.io/mkdocs
-#site_url: https://catx.readthedocs.io/
+site_url: https://catx.readthedocs.io/
 site_dir: public
-repo_name: instadeep/catx
-repo_url: https://gitlab.com/instadeep/catx
-#repo_url: https://github.com/instadeep/catx
+repo_name: instadeepai/catx
+repo_url: https://github.com/instadeepai/catx
 strict: false # Don't allow warnings during the build process
 
 
