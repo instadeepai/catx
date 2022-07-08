@@ -26,6 +26,15 @@ COPY requirements-test.txt ./
 RUN pip install -r requirements-test.txt
 
 
+FROM test-image as tool-image
+
+COPY requirements-tool.txt ./
+RUN pip install -r requirements-tool.txt
+
+COPY .pre-commit-config.yaml ./
+RUN git init && pre-commit install-hooks
+
+
 FROM python:3.10.5-bullseye as run-image
 
 ARG VERSION
