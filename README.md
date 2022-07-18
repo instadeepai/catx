@@ -136,3 +136,22 @@ run `pip install --upgrade pip` then run one of the following depending on your 
     ```
 
 - \[Optional\] follow step 2 above for JAX to use GPU.
+
+
+## Citing CATX
+
+To cite this repository:
+
+```
+@software{catx2022github,
+  author = {Wissam Bejjani and Cyprien Courtot},
+  title = {{CATX}: contextual bandits library for {C}ontinuous {A}ction {T}rees with {S}moothing in {JAX}},
+  url = {https://github.com/instadeepai/catx/},
+  version = {0.1.2},
+  year = {2022},
+}
+```
+
+In this bibtex entry, the version number is intended to be from
+[`catx/VERSION`](https://github.com/instadeepai/catx/blob/main/catx/VERSION),
+and the year corresponds to the project's open-source release.
