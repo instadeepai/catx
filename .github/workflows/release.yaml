@@ -17,14 +17,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools build wheel twine
-      - name: Build and publish to test pypi
-        env:
-          TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD }}
-        run: |
-          python setup.py sdist bdist_wheel
-          twine upload -r testpypi dist/*
-
       - name: Build and publish to pypi
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
