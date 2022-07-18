@@ -4,7 +4,7 @@ on: [push]
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/catx
+  IMAGE_NAME: instadeepai/catx
 
 jobs:
   build:
@@ -48,7 +48,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/tool:${{ github.ref_name }}
+      image: ghcr.io/instadeepai/catx/tool:${{ github.ref_name }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     container:
-      image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/tool:${{ github.ref_name }}
+      image: ghcr.io/instadeepai/catx/tool:${{ github.ref_name }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
