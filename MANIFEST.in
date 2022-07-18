@@ -4,3 +4,7 @@ include README.md
 include Dockerfile
 graft tests
 graft catx
+
+include requirements.txt
+include requirements-test.txt
+include requirements-tool.txt

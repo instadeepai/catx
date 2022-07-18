@@ -1,4 +1,4 @@
-name: GitHub Actions Trial
+name: ci
 
 on: [push]
 

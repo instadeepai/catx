@@ -11,7 +11,7 @@ It allows implementing custom neural network architecture per tree layer.
 
 CATX follows the approach proposed in the paper [Efficient Contextual Bandits with Continuous Actions](https://arxiv.org/pdf/2006.06040.pdf).
 
-To understand how CATX works, checkout out the [documentations](TODO: add readthedocs link when available).
+To understand how CATX works, checkout out the [documentations](https://catx.readthedocs.io/en/latest/).
 
 ## CATX training loop example:
 
