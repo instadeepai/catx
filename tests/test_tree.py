@@ -8,9 +8,9 @@ import pytest
 import numpy as np
 from chex import assert_type
 
+from catx.network_builder import NetworkBuilder
 from catx.tree import TreeParameters, Tree
 from catx.type_defs import JaxObservations, Logits
-from tests.conftest import MLPBuilder
 
 
 @pytest.mark.parametrize("bandwidth", [1.5 / 4, 1 / 8])
@@ -67,7 +67,7 @@ def test_tree_parameters__bandwidth(bandwidth: float) -> None:
 
 
 def test_tree(
-    mlp_builder: MLPBuilder,
+    mlp_builder: NetworkBuilder,
     tree_parameters: TreeParameters,
     jax_observations: JaxObservations,
 ) -> None:
