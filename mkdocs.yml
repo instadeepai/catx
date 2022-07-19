@@ -67,3 +67,5 @@ nav:
       - tree: api/tree.md
       - catx: api/catx.md
       - network builder: api/network_builder.md
+
+copyright: InstaDeep © 2022 Copyright, all rights reserved.

@@ -11,13 +11,13 @@ from pytest_mock import MockerFixture
 from jax import numpy as jnp
 
 from catx.catx import CATX
+from catx.network_builder import NetworkBuilder
 
 from catx.type_defs import Observations, Actions, Probabilities, JaxObservations
-from tests.conftest import MLPBuilder
 
 
 @pytest.fixture
-def catx(mlp_builder: MLPBuilder, request: pytest.FixtureRequest = None) -> CATX:
+def catx(mlp_builder: NetworkBuilder, request: pytest.FixtureRequest = None) -> CATX:
     if not request:
         action_min = 0.0
         action_max = 1.0
@@ -123,7 +123,7 @@ def test_catx__sample_action_range(
     "action_min, action_max", [(0.0, 0.0), (1.0, 0.0), (-5.0, -10.0)]
 )
 def test_catx__init_action_range_sad(
-    mlp_builder: MLPBuilder, action_min: float, action_max: float
+    mlp_builder: NetworkBuilder, action_min: float, action_max: float
 ) -> None:
     rng_key = jax.random.PRNGKey(42)
     rng_key, catx_key = jax.random.split(rng_key, num=2)
