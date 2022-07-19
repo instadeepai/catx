@@ -1,6 +1,9 @@
-from typing import TypeAlias
+try:
+    from typing import TypeAlias
+except ImportError:
+    from typing_extensions import TypeAlias
 
-from chex import ArrayNumpy, Array
+from chex import Array, ArrayNumpy
 
 Actions: TypeAlias = ArrayNumpy
 JaxActions: TypeAlias = Array
