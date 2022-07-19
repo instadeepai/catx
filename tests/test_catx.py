@@ -15,8 +15,6 @@ from catx.network_builder import NetworkBuilder
 
 from catx.type_defs import Observations, Actions, Probabilities, JaxObservations
 
-# from tests.conftest import MLPBuilder
-
 
 @pytest.fixture
 def catx(mlp_builder: NetworkBuilder, request: pytest.FixtureRequest = None) -> CATX:
