@@ -1,3 +1,4 @@
+chex
 dm-haiku
 matplotlib
 numpy
