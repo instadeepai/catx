@@ -39,7 +39,7 @@ setup(
     long_description_content_type="text/markdown",
     author="InstaDeep",
     packages=find_packages(),
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     install_requires=read_requirements("requirements.txt"),
     entry_points={"console_scripts": ["project_name = project_name.__main__:main"]},
     extras_require={
