@@ -62,7 +62,9 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Installation: installation.md
   - From bandits to CATX: bandits.md
+  - code example: code_example.md
   - Algorithm: artifacts/algo_catx_embed.md
   - API Reference:
       - tree: api/tree.md

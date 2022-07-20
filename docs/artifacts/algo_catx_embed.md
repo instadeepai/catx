@@ -1,4 +1,7 @@
 ## CATX algorithm
+This page presents a visual guide to the CATX algorithm.
+
+It is intended to give CATX users a better grasp of the inner workings of the algorithm.
 
 <object data="../../artifacts/algo_catx.pdf" type="application/pdf" style="min-height:50vh;width:100%">
     <embed src="../../artifacts/algo_catx.pdf" type="application/pdf" />
