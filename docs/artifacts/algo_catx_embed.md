@@ -1,4 +1,4 @@
-## CATX algorithm
+# CATX algorithm
 This page presents a visual guide to the CATX algorithm.
 
 It is intended to give CATX users a better grasp of the inner workings of the algorithm.
