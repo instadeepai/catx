@@ -27,8 +27,8 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
-  logo: img/catx_logo.png
-  favicon: img/catx_logo.png
+  logo: img/Logo_CatX_Icon_2.png
+  favicon: img/Logo_CatX_Icon_2.png
   icon:
     repo: fontawesome/brands/gitlab
   features:
@@ -62,6 +62,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - From bandits to CATX: bandits.md
   - Algorithm: artifacts/algo_catx_embed.md
   - API Reference:
       - tree: api/tree.md
