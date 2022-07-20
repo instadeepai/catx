@@ -63,7 +63,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Getting started: code_example.md
+  - Getting started: getting_started.md
   - From bandits to CATX: bandits.md
   - Algorithm: artifacts/algo_catx_embed.md
   - API Reference:

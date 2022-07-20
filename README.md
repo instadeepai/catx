@@ -21,8 +21,10 @@ and allowing custom neural networks in the tree structure of the CATS algorithm.
 
 ## Documentation
 Go to [documentations](https://catx.readthedocs.io/en/latest/)
-to find everything you need to know about CATX from `pip install catx`
-to a detailed visual guide of CATX's inner workings with examples.
+to find everything you need to know about CATX
+from the [installation](https://catx.readthedocs.io/en/latest/installation/) with `pip install catx`
+to a quick [getting started](https://catx.readthedocs.io/en/latest/getting_started/) example
+and much more on CATX and its inner workings.
 
 
 ## Citing CATX
