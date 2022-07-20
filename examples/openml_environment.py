@@ -1,11 +1,7 @@
 from typing import Optional
-
-import chex
 import numpy as np
-
 import tensorflow as tf
 from sklearn.datasets import fetch_openml
-
 from catx.type_defs import (
     Actions,
     Costs,
@@ -25,7 +21,6 @@ class OpenMLEnvironment:
         self.y = np.delete(self.y, rows_with_nan_idx, axis=0)
         self.x = self._normalize_data(self.x)
         self.y = self._normalize_data(self.y)
-        self._y_mean = np.mean(self.y)
         physical_devices = tf.config.list_physical_devices("GPU")
 
         # Allow gpu memory growth for tensorflow.
@@ -38,8 +33,7 @@ class OpenMLEnvironment:
         self.dataset = self.dataset.batch(batch_size)
         self.iterator = iter(self.dataset)
 
-    def get_new_observations(self, key: chex.PRNGKey) -> Optional[Observations]:
-        del key
+    def get_new_observations(self) -> Optional[Observations]:
         try:
             x, y = self.iterator.get_next()
             self.x = x.numpy()
@@ -48,11 +42,7 @@ class OpenMLEnvironment:
         except tf.errors.OutOfRangeError:
             return None
 
-    def get_costs(
-        self, key: chex.PRNGKey, obs: Observations, actions: Actions
-    ) -> Costs:
-        del key
-        del obs
+    def get_costs(self, actions: Actions) -> Costs:
         costs = np.abs(actions - self.y)
 
         return costs
