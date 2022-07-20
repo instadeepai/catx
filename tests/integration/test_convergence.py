@@ -74,7 +74,7 @@ def test_catx_convergence(dataset_id_loss: Tuple[int, float]) -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        rng_key=subkey,
+        rng_key=key,
         network_builder=MLPBuilder(),
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
