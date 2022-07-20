@@ -68,23 +68,22 @@ def test_catx_convergence(dataset_id_loss: Tuple[int, float]) -> None:
     epsilon = 0.05
     dataset_id, loss_convergence_threshold = dataset_id_loss
     rng_key = jax.random.PRNGKey(42)
-    catx_key, env_key = jax.random.split(rng_key, num=2)
+    key, subkey = jax.random.split(rng_key)
 
-    builder = MLPBuilder()
-    optimizer = optax.adam(learning_rate=0.01)
+    batch_size = 10
+    environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
+
     catx = CATX(
-        rng_key=catx_key,
-        network_builder=builder,
-        optimizer=optimizer,
+        rng_key=subkey,
+        network_builder=MLPBuilder(),
+        optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,
     )
-    batch_size = 10
-    environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
+
     costs_cumulative = []
     no_iterations = 1000
     for _ in range(no_iterations):
-        env_key, subkey = jax.random.split(env_key)
         obs = environment.get_new_observations()
         if obs is None:
             break
