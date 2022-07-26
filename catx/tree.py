@@ -2,11 +2,11 @@ from typing import Dict, Optional, TYPE_CHECKING
 
 import haiku as hk
 import numpy as np
-from chex import Array
+from chex import Array, PRNGKey
 import jax.numpy as jnp
 
 from catx.network_builder import NetworkBuilder
-from catx.type_defs import Logits
+from catx.type_defs import Logits, StateExtras
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -108,7 +108,9 @@ class Tree(hk.Module):
             for depth in range(self.tree_params.depth)
         }
 
-    def __call__(self, obs: Array) -> Dict[int, Logits]:
+    def __call__(
+        self, obs: Array, key: PRNGKey, state_extras: StateExtras
+    ) -> Dict[int, Logits]:
         """Query the neural networks of the tree.
 
         Args:
@@ -121,6 +123,8 @@ class Tree(hk.Module):
         logits = {}
         for i in range(self.tree_params.depth):
             n_leafs = 2 ** (i + 1)
-            c = self.networks[i](obs).reshape(-1, n_leafs // 2, 2)
+            c = self.networks[i](
+                obs, dropout_rate=state_extras["dropout_rate"], rng=key
+            ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c
         return logits

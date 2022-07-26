@@ -1,3 +1,4 @@
+import dataclasses
 import functools
 from typing import Callable, Tuple, Dict
 
@@ -6,7 +7,6 @@ import haiku as hk
 import jax
 import numpy as np
 import optax
-from chex import PRNGKey
 from jax import numpy as jnp
 from chex import Array
 from jax.stages import Wrapped
@@ -24,7 +24,19 @@ from catx.type_defs import (
     Observations,
     Probabilities,
     JaxLoss,
+    StateExtras,
 )
+
+
+@dataclasses.dataclass
+class CATXState:
+    """Holds the CATX's training state."""
+
+    params: hk.Params
+    depth_params: Dict[int, hk.Params]
+    opt_states: optax.OptState
+    key: chex.PRNGKey
+    state_extras: StateExtras
 
 
 class CATX:
@@ -32,7 +44,6 @@ class CATX:
 
     def __init__(
         self,
-        rng_key: PRNGKey,
         network_builder: NetworkBuilder,
         optimizer: optax.GradientTransformation,
         discretization_parameter: int,
@@ -43,7 +54,6 @@ class CATX:
         """Instantiate a CATX instance with its corresponding tree.
 
         Args:
-            rng_key: JAX key generator.
             network_builder: specify the neural network architecture for each depth in the tree.
             optimizer: optax optimizer object.
             discretization_parameter: the number of action centroids.
@@ -61,7 +71,6 @@ class CATX:
         self.bandwidth = bandwidth
         self.network_builder = network_builder
         self.optimizer = optimizer
-        self.rng_key = rng_key
         self.tree_params = TreeParameters.construct(
             bandwidth=bandwidth, discretization_parameter=discretization_parameter
         )
@@ -69,40 +78,57 @@ class CATX:
         self._action_min = action_min
         self._action_max = action_max
 
-        self.is_initialized = False
+        self._is_initialized = False
 
         self._forward_fn: Wrapped
         self._forward_single_depth_fns: Dict[int, Wrapped]
-        self._params: hk.Params
-        self._depth_params: Dict[int, hk.Params]
-        self._opt_states: Dict[int, optax.OptState]
 
     def sample(
-        self, obs: Observations, epsilon: float
-    ) -> Tuple[Actions, Probabilities]:
+        self,
+        obs: Observations,
+        epsilon: float,
+        state: CATXState,
+    ) -> Tuple[Actions, Probabilities, CATXState]:
         """Samples an action from the tree.
 
         Args:
             obs: the observations, i.e., batched contexts.
             epsilon: probability of selecting a random action.
+            state: holds the CATX's training state.
 
         Returns:
             actions: sampled actions from the tree using epsilon-greedy.
             probabilities: the probability density value of the sampled actions.
+            state: holds the CATX's training state.
         """
 
         obs = jnp.asarray(obs)
 
-        if not self.is_initialized:
-            self._init(obs=obs, epsilon=epsilon)
+        if not self._is_initialized:
+            raise RuntimeError(
+                'CATX instance must initialized before calling "sample" or "learn".'
+            )
 
-        self.rng_key, sample_key = jax.random.split(self.rng_key, 2)
+        key, subkey = jax.random.split(state.key)
 
         actions, probabilities = self._forward_fn(
-            self._params, x=obs, epsilon=epsilon, rng=sample_key
+            params=state.params,
+            x=obs,
+            rng=subkey,
+            epsilon=epsilon,
+            state_extras=state.state_extras,
+            key=subkey,
         )
 
-        return np.array(actions), np.array(probabilities)
+        state_new = CATXState(
+            params=state.params,
+            depth_params=state.depth_params,
+            opt_states=state.opt_states,
+            key=key,
+            state_extras=state.state_extras,
+        )
+
+        return np.array(actions), np.array(probabilities), state_new
 
     def learn(
         self,
@@ -110,7 +136,8 @@ class CATX:
         actions: Actions,
         probabilities: Probabilities,
         costs: Costs,
-    ) -> None:
+        state: CATXState,
+    ) -> CATXState:
         """Updates the tree:
             - updates the parameters of the depth specific neural networks.
             - copy the parameters of the depth specific neural networks to the tree neural networks.
@@ -122,34 +149,56 @@ class CATX:
             actions: The executed actions associated with the given observations.
             probabilities: the probability density value of the actions.
             costs: The costs incurred from the executed actions.
+            state: holds the CATX's training state.
+
+        Returns:
+            state: holds the CATX's training state.
+
         """
 
         obs = jnp.asarray(obs)
 
-        if not self.is_initialized:
-            self._init(obs=obs)
+        if not self._is_initialized:
+            raise RuntimeError(
+                'CATX instance must initialized before calling "sample" or "learn".'
+            )
+
+        key, subkey = jax.random.split(state.key)
 
         rng_key, new_layers_params, new_opt_states = self._update(
-            rng_key=self.rng_key,
-            layers_params=self._depth_params,
-            opt_states=self._opt_states,
+            rng_key=subkey,
+            layers_params=state.depth_params,
+            opt_states=state.opt_states,
             obs=obs,
             actions=actions,
             probabilities=probabilities,
             costs=costs,
+            state_extras=state.state_extras,
         )
 
-        self.rng_key = rng_key
-        self._depth_params = new_layers_params
-        self._opt_states = new_opt_states
-
-        self._params = {
+        params = {
             k: v
             for layer_params in new_layers_params.values()
             for k, v in layer_params.items()
         }
 
-    def _init(self, obs: JaxObservations, epsilon: float = 0.0) -> None:
+        state_new = CATXState(
+            params=params,
+            depth_params=new_layers_params,
+            opt_states=new_opt_states,
+            key=key,
+            state_extras=state.state_extras,
+        )
+
+        return state_new
+
+    def init(
+        self,
+        obs: JaxObservations,
+        key: chex.PRNGKey,
+        epsilon: float,
+        state_extras: StateExtras,
+    ) -> CATXState:
         """Initializes the parameters of tree's neural networks,
         the forward functions, and the optimizer states.
 
@@ -157,30 +206,64 @@ class CATX:
 
         Args:
             obs: the observations, i.e., batched contexts.
+            key: pseudo-random number generator.
+            epsilon: probability of selecting a random action.
+            state_extras: additional information for querying the neural networks.
+
+        Returns:
+            state: holds the CATX's training state.
         """
 
-        if self.is_initialized:
-            return
+        if self._is_initialized:
+            raise RuntimeError(
+                "CATX instance has been initialized. It can only be initialized once."
+            )
 
-        self.is_initialized = True
-        self._params, self._forward_fn = self._create_forward_fn(
-            obs=obs, epsilon=epsilon
+        self._is_initialized = True
+
+        key, subkey = jax.random.split(key)
+
+        params, self._forward_fn = self._create_forward_fn(
+            obs=obs,
+            epsilon=epsilon,
+            key=subkey,
+            state_extras=state_extras,
         )
+
         (
             self._forward_single_depth_fns,
-            self._depth_params,
-        ) = self._create_forward_single_depth_fns(obs)
+            depth_params,
+        ) = self._create_forward_single_depth_fns(
+            obs=obs, key=subkey, state_extras=state_extras
+        )
 
-        self._opt_states = self._init_opt_states()
+        opt_states = self._init_opt_states(depth_params)
+
+        state = CATXState(
+            params=params,
+            depth_params=depth_params,
+            opt_states=opt_states,
+            key=key,
+            state_extras=state_extras,
+        )
+
+        return state
 
     def _create_forward_fn(
-        self, obs: Observations, epsilon: float
+        self,
+        obs: Observations,
+        epsilon: float,
+        key: chex.PRNGKey,
+        state_extras: StateExtras,
     ) -> Tuple[hk.Params, Wrapped]:
         """Creates a jitted forward function of the tree
         and initializes the parameters of tree's neural networks.
 
         Args:
             obs: the observations, i.e., batched contexts.
+            epsilon: probability of selecting a random action.
+            key: pseudo-random number generator.
+            state_extras: additional information for querying the neural networks.
 
         Returns:
             _params: the parameters of the neural networks
@@ -188,7 +271,10 @@ class CATX:
         """
 
         def _forward(
-            x: JaxObservations, epsilon: float
+            x: JaxObservations,
+            epsilon: float,
+            state_extras: StateExtras,
+            key: chex.PRNGKey,
         ) -> Tuple[JaxActions, JaxProbabilities]:
             """This forward function defines how the tree is traversed and how actions sampled:
                 - All the tree logits are queried (one set of pairwise logits per tree depth).
@@ -201,19 +287,20 @@ class CATX:
             Args:
                 x: the observations, i.e., batched contexts.
                 epsilon: probability of selecting a random action.
+                state_extras: additional information for querying the neural networks.
+                key: pseudo-random number generator.
 
             Returns:
                 actions: sampled actions from the tree using epsilon-greedy
                         and scaled to the environment action range.
                 probabilities: the probability density value of the actions.
-
             """
 
             tree = Tree(
                 network_builder=self.network_builder,
                 tree_params=self.tree_params,
             )
-            logits = tree(x)
+            logits = tree(obs=x, key=key, state_extras=state_extras)
 
             batch_size = x.shape[0]
             mask = logits[0] < jnp.max(logits[0], axis=(1, 2)).reshape(batch_size, 1, 1)
@@ -273,19 +360,26 @@ class CATX:
 
         forward = hk.transform(_forward)
 
-        _params = forward.init(rng=self.rng_key, x=obs, epsilon=epsilon)
+        _params = forward.init(
+            rng=key, x=obs, epsilon=epsilon, state_extras=state_extras, key=key
+        )
         _forward_fn = jax.jit(forward.apply)
 
         return _params, _forward_fn
 
     def _create_forward_single_depth_fns(
-        self, obs: Observations
+        self,
+        obs: Observations,
+        key: chex.PRNGKey,
+        state_extras: StateExtras,
     ) -> Tuple[Dict[int, Wrapped], Dict[int, hk.Params]]:
         """Creates a dictionary of jitted forward functions, one per neural networks at each tree depth
         and initializes the parameters of these neural networks.
 
         Args:
             obs: the observations, i.e., batched contexts.
+            state_extras: additional information for querying the neural networks.
+            key: pseudo-random number generator.
 
         Returns:
             _forward_single_depth_fns: a dictionary of jitted forward functions of neural networks
@@ -307,11 +401,15 @@ class CATX:
 
             n_leafs = 2 ** (depth + 1)
 
-            def _forward(x: JaxObservations) -> Logits:
+            def _forward(
+                x: JaxObservations, state_extras: StateExtras, key: chex.PRNGKey
+            ) -> Logits:
                 """Creates a neural network forward function for a predefined depth.
 
                 Args:
                     x: the observations, i.e., batched contexts.
+                    state_extras: additional information for querying the neural networks.
+                    key: pseudo-random number generator.
 
                 Returns:
                     the neural network forward function at the predefined depth.
@@ -321,7 +419,9 @@ class CATX:
                     network_builder=self.network_builder,
                     tree_params=self.tree_params,
                 )
-                return tree.networks[depth](x).reshape(x.shape[0], n_leafs // 2, 2)
+                return tree.networks[depth](
+                    x, dropout_rate=state_extras["dropout_rate"], rng=key
+                ).reshape(x.shape[0], n_leafs // 2, 2)
 
             return _forward
 
@@ -334,13 +434,15 @@ class CATX:
         }
 
         _depth_params = {
-            i: layer.init(x=obs, rng=self.rng_key)
+            i: layer.init(x=obs, rng=key, state_extras=state_extras, key=key)
             for i, layer in transformed_layers.items()
         }
 
         return _forward_single_depth_fns, _depth_params
 
-    def _init_opt_states(self) -> Dict[int, optax.OptState]:
+    def _init_opt_states(
+        self, depth_params: Dict[int, hk.Params]
+    ) -> Dict[int, optax.OptState]:
         """Initializes an optimizer state for each tree depth
         using the parameters of the depth specific neural networks.
 
@@ -349,7 +451,7 @@ class CATX:
         """
 
         _opt_states = {
-            d: self.optimizer.init(params) for d, params in self._depth_params.items()
+            d: self.optimizer.init(params) for d, params in depth_params.items()
         }
 
         return _opt_states
@@ -393,6 +495,7 @@ class CATX:
         depth: int,
         mask_eq: Array,
         rng_key: chex.PRNGKey,
+        state_extras: StateExtras,
     ) -> JaxLoss:
         """Computes the loss function a given depth.
 
@@ -403,13 +506,18 @@ class CATX:
             depth: the tree depth at which the loss will be calculated.
             mask_eq: a mask with zeros where smooth cost pairs are equal
             rng_key: JAX key generator.
+            state_extras: additional information for querying the neural networks.
 
         Returns:
             the sum of the batch losses.
         """
 
         logits = self._forward_single_depth_fns[depth](
-            params=layer_params, x=obs, rng=rng_key
+            params=layer_params,
+            x=obs,
+            rng=rng_key,
+            state_extras=state_extras,
+            key=rng_key,
         )
 
         smooth_costs_filtered = jnp.multiply(mask_eq, smooth_costs)
@@ -427,6 +535,7 @@ class CATX:
         actions: JaxActions,
         probabilities: JaxProbabilities,
         costs: JaxCosts,
+        state_extras: StateExtras,
     ) -> Tuple[chex.PRNGKey, Dict[int, hk.Params], Dict[int, optax.OptState]]:
         """Performs the update of the neural networks.
 
@@ -438,6 +547,7 @@ class CATX:
             actions: the executed actions in the environment action range.
             probabilities: the probability density value of the actions.
             costs: the costs incurred from the executed actions.
+            state_extras: additional information for querying the neural networks.
 
         Returns:
             rng_key: JAX key generator.
@@ -468,7 +578,13 @@ class CATX:
 
             # Compute and apply gradient
             grads = jax.grad(self._loss)(
-                layers_params[depth], obs, smooth_costs, depth, mask_eq, loss_key
+                layers_params[depth],
+                obs,
+                smooth_costs,
+                depth,
+                mask_eq,
+                loss_key,
+                state_extras,
             )
             updates, opt_state = self.optimizer.update(grads, opt_states[depth])
             new_layer_params[depth] = optax.apply_updates(layers_params[depth], updates)
@@ -478,7 +594,11 @@ class CATX:
             if depth > 0:
                 # Get smooth cost from 1 step forward following the updated parameters
                 logits = self._forward_single_depth_fns[depth](
-                    params=new_layer_params[depth], x=obs, rng=layer_key
+                    params=new_layer_params[depth],
+                    x=obs,
+                    rng=layer_key,
+                    state_extras=state_extras,
+                    key=layer_key,
                 )
                 mask = logits < jnp.max(logits, axis=-1).reshape(
                     logits.shape[0:2] + (1,)

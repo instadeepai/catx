@@ -33,7 +33,6 @@ def main() -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        rng_key=subkey,
         network_builder=MLPBuilder(),
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
@@ -41,16 +40,32 @@ def main() -> None:
     )
 
     costs_cumulative = []
-    for _ in range(1000):
+    for i in range(1000):
         obs = environment.get_new_observations()
         if obs is None:
             break
 
-        actions, probabilities = catx.sample(obs=obs, epsilon=epsilon)
+        if i == 0:
+            state_extras = {"dropout_rate": 0.1}
+            state = catx.init(
+                obs=obs, epsilon=epsilon, key=key, state_extras=state_extras
+            )
+
+        state.state_extras["dropout_rate"] = 0.2
+        actions, probabilities, state = catx.sample(
+            obs=obs, epsilon=epsilon, state=state
+        )
 
         costs = environment.get_costs(actions=actions)
 
-        catx.learn(obs, actions, probabilities, costs)
+        state.state_extras["dropout_rate"] = 0.0
+        state = catx.learn(
+            obs=obs,
+            actions=actions,
+            probabilities=probabilities,
+            costs=costs,
+            state=state,
+        )
 
         costs_cumulative.append(jnp.mean(costs).item())
 

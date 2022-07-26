@@ -1,5 +1,5 @@
 try:
-    from typing import TypeAlias
+    from typing import TypeAlias, Dict, Any
 except ImportError:
     from typing_extensions import TypeAlias
 
@@ -19,3 +19,5 @@ Probabilities: TypeAlias = ArrayNumpy
 JaxProbabilities: TypeAlias = Array
 
 Logits: TypeAlias = Array
+
+StateExtras: TypeAlias = Dict[str, Any]
