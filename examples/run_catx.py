@@ -3,11 +3,14 @@ from typing import List
 import haiku as hk
 import jax
 import optax
+from chex import PRNGKey
 from jax import numpy as jnp
 from catx.catx import CATX
-from catx.network_builder import NetworkBuilder
+from catx.network_builder import CustomHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
+
+from catx.type_defs import Logits, Observations, StateExtras
 from examples.openml_environment import OpenMLEnvironment
 
 
@@ -15,9 +18,17 @@ def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w
 
 
-class MLPBuilder(NetworkBuilder):
-    def create_network(self, depth: int) -> hk.Module:
-        return hk.nets.MLP([10, 10] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
+class MyCustomNetwork(CustomHaikuNetwork):
+    def __init__(self, depth: int) -> None:
+        super().__init__(depth)
+        self.network = hk.nets.MLP(
+            [10, 10] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+        )
+
+    def __call__(
+        self, obs: Observations, state_extras: StateExtras, key: PRNGKey
+    ) -> Logits:
+        return self.network(obs, dropout_rate=state_extras["dropout_rate"], rng=key)
 
 
 def main() -> None:
@@ -33,7 +44,7 @@ def main() -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        network_builder=MLPBuilder(),
+        custom_network=MyCustomNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,

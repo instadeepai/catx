@@ -1,11 +1,11 @@
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING, Type
 
 import haiku as hk
 import numpy as np
 from chex import Array, PRNGKey
 import jax.numpy as jnp
 
-from catx.network_builder import NetworkBuilder
+from catx.network_builder import CustomHaikuNetwork
 from catx.type_defs import Logits, StateExtras
 
 if TYPE_CHECKING:
@@ -88,14 +88,14 @@ class TreeParameters:
 class Tree(hk.Module):
     def __init__(
         self,
-        network_builder: NetworkBuilder,
+        custom_network: Type[CustomHaikuNetwork],
         tree_params: TreeParameters,
         name: Optional[str] = None,
     ):
         """The tree as a JAX Haiku module.
 
         Args:
-            network_builder: specify the neural network architecture for each depth in the tree.
+            custom_network: class specifying the neural network architecture.
             tree_params: object holding the tree parameters.
             name: name of the tree.
         """
@@ -104,7 +104,7 @@ class Tree(hk.Module):
         self.tree_params = tree_params
 
         self.networks = {
-            depth: network_builder.create_network(depth=depth)
+            depth: custom_network(depth=depth)
             for depth in range(self.tree_params.depth)
         }
 
@@ -115,6 +115,8 @@ class Tree(hk.Module):
 
         Args:
             obs: the observations, i.e., batched contexts.
+            key: pseudo-random number generator.
+            state_extras: additional information for querying the neural networks.
 
         Returns:
             logits: a dictionary of the networks' logits grouped pairwise.
@@ -123,8 +125,8 @@ class Tree(hk.Module):
         logits = {}
         for i in range(self.tree_params.depth):
             n_leafs = 2 ** (i + 1)
-            c = self.networks[i](
-                obs, dropout_rate=state_extras["dropout_rate"], rng=key
-            ).reshape(-1, n_leafs // 2, 2)
+            c = self.networks[i](obs=obs, state_extras=state_extras, key=key).reshape(
+                -1, n_leafs // 2, 2
+            )
             logits[i] = c
         return logits

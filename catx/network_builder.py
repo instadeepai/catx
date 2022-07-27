@@ -1,22 +1,37 @@
-from abc import ABC, abstractmethod
-
+from abc import abstractmethod
 import haiku as hk
+from chex import PRNGKey
+from catx.type_defs import Observations, StateExtras, Logits
 
 
-class NetworkBuilder(ABC):
-    """An interface for implementing a neural network builder."""
+class CustomHaikuNetwork(hk.Module):
+    """An interface for implementing a custom Haiku neural network."""
 
     @abstractmethod
-    def create_network(self, depth: int) -> hk.Module:
-        """An abstract method for creating a Haiku neural network.
+    def __init__(self, depth: int):
+        """Specify the network architecture.
 
-        The dimension of the network output layer should be 2**(depth+1)
+        The dimension of the network output layer must be; 2**(depth+1).
 
         Args:
-            depth: the depth at which the network will be used in the tree.
+           depth: the depth at which the network will be used in the tree.
+        """
+        super().__init__()
+        self.depth = depth
+        pass
+
+    @abstractmethod
+    def __call__(
+        self, obs: Observations, state_extras: StateExtras, key: PRNGKey
+    ) -> Logits:
+        """Query the neural network.
+
+        Args:
+            obs: the observations, i.e., batched contexts.
+            state_extras: additional information for querying the neural networks.
+            key: pseudo-random number generator.
 
         Returns:
-            a Haiku neural network module.
+            logits: a dictionary of the networks' logits grouped pairwise.
         """
-
         pass

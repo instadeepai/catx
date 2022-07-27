@@ -1,6 +1,6 @@
 import dataclasses
 import functools
-from typing import Callable, Tuple, Dict
+from typing import Callable, Tuple, Dict, Type
 
 import chex
 import haiku as hk
@@ -11,7 +11,7 @@ from jax import numpy as jnp
 from chex import Array
 from jax.stages import Wrapped
 
-from catx.network_builder import NetworkBuilder
+from catx.network_builder import CustomHaikuNetwork
 from catx.tree import Tree, TreeParameters
 from catx.type_defs import (
     Actions,
@@ -44,7 +44,7 @@ class CATX:
 
     def __init__(
         self,
-        network_builder: NetworkBuilder,
+        custom_network: Type[CustomHaikuNetwork],
         optimizer: optax.GradientTransformation,
         discretization_parameter: int,
         bandwidth: float,
@@ -54,7 +54,7 @@ class CATX:
         """Instantiate a CATX instance with its corresponding tree.
 
         Args:
-            network_builder: specify the neural network architecture for each depth in the tree.
+            custom_network: class specifying the neural network architecture.
             optimizer: optax optimizer object.
             discretization_parameter: the number of action centroids.
             bandwidth: the bucket half width covered by action centroid.
@@ -69,7 +69,7 @@ class CATX:
 
         self.discretization_parameter = discretization_parameter
         self.bandwidth = bandwidth
-        self.network_builder = network_builder
+        self.custom_network = custom_network
         self.optimizer = optimizer
         self.tree_params = TreeParameters.construct(
             bandwidth=bandwidth, discretization_parameter=discretization_parameter
@@ -297,7 +297,7 @@ class CATX:
             """
 
             tree = Tree(
-                network_builder=self.network_builder,
+                custom_network=self.custom_network,
                 tree_params=self.tree_params,
             )
             logits = tree(obs=x, key=key, state_extras=state_extras)
@@ -389,7 +389,7 @@ class CATX:
 
         def create_single_depth_function(
             depth: int,
-        ) -> Callable[[JaxObservations], Logits]:
+        ) -> Callable[[JaxObservations, StateExtras, chex.PRNGKey], Logits]:
             """Creates a neural network forward function for a given depth.
 
             Args:
@@ -416,11 +416,11 @@ class CATX:
                 """
 
                 tree = Tree(
-                    network_builder=self.network_builder,
+                    custom_network=self.custom_network,
                     tree_params=self.tree_params,
                 )
                 return tree.networks[depth](
-                    x, dropout_rate=state_extras["dropout_rate"], rng=key
+                    obs=x, state_extras=state_extras, key=key
                 ).reshape(x.shape[0], n_leafs // 2, 2)
 
             return _forward
