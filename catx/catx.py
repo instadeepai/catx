@@ -117,7 +117,7 @@ class CATX:
             rng=subkey,
             epsilon=epsilon,
             state_extras=state.state_extras,
-            key=subkey,
+            # key=subkey,
         )
 
         state_new = CATXState(
@@ -221,12 +221,12 @@ class CATX:
 
         self._is_initialized = True
 
-        key, subkey = jax.random.split(key)
+        key, key_forward_fn, key_single_depth_fns = jax.random.split(key, num=3)
 
         params, self._forward_fn = self._create_forward_fn(
             obs=obs,
             epsilon=epsilon,
-            key=subkey,
+            key=key_forward_fn,
             state_extras=state_extras,
         )
 
@@ -234,7 +234,7 @@ class CATX:
             self._forward_single_depth_fns,
             depth_params,
         ) = self._create_forward_single_depth_fns(
-            obs=obs, key=subkey, state_extras=state_extras
+            obs=obs, key=key_single_depth_fns, state_extras=state_extras
         )
 
         opt_states = self._init_opt_states(depth_params)
@@ -274,7 +274,6 @@ class CATX:
             x: JaxObservations,
             epsilon: float,
             state_extras: StateExtras,
-            key: chex.PRNGKey,
         ) -> Tuple[JaxActions, JaxProbabilities]:
             """This forward function defines how the tree is traversed and how actions sampled:
                 - All the tree logits are queried (one set of pairwise logits per tree depth).
@@ -288,7 +287,6 @@ class CATX:
                 x: the observations, i.e., batched contexts.
                 epsilon: probability of selecting a random action.
                 state_extras: additional information for querying the neural networks.
-                key: pseudo-random number generator.
 
             Returns:
                 actions: sampled actions from the tree using epsilon-greedy
@@ -301,8 +299,15 @@ class CATX:
                 tree_params=self.tree_params,
             )
 
-            key, subkey = jax.random.split(key)
-            logits = tree(obs=x, key=subkey, state_extras=state_extras)
+            (
+                key_tree_networks,
+                key_exploration,
+                key_exploitation,
+                key_sampling_exploration,
+                _,
+            ) = jax.random.split(hk.next_rng_key(), num=5)
+
+            logits = tree(obs=x, key=key_tree_networks, state_extras=state_extras)
 
             batch_size = x.shape[0]
             mask = logits[0] < jnp.max(logits[0], axis=(1, 2)).reshape(batch_size, 1, 1)
@@ -324,12 +329,6 @@ class CATX:
             # epsilon-greedy
             probabilities = (1 - epsilon) * probabilities + epsilon
             action_spaces = tree.tree_params.spaces[actions_centroid]
-
-            (
-                key_exploration,
-                key_exploitation,
-                key_sampling_exploration,
-            ) = jax.random.split(key, num=3)
 
             exploitation_actions = jax.random.uniform(
                 key_exploitation,
@@ -363,7 +362,10 @@ class CATX:
         forward = hk.transform(_forward)
 
         _params = forward.init(
-            rng=key, x=obs, epsilon=epsilon, state_extras=state_extras, key=key
+            rng=key,
+            x=obs,
+            epsilon=epsilon,
+            state_extras=state_extras,
         )
         _forward_fn = jax.jit(forward.apply)
 
@@ -391,7 +393,7 @@ class CATX:
 
         def create_single_depth_function(
             depth: int,
-        ) -> Callable[[JaxObservations, StateExtras, chex.PRNGKey], Logits]:
+        ) -> Callable[[JaxObservations, StateExtras], Logits]:
             """Creates a neural network forward function for a given depth.
 
             Args:
@@ -403,21 +405,18 @@ class CATX:
 
             n_leafs = 2 ** (depth + 1)
 
-            def _forward(
-                x: JaxObservations, state_extras: StateExtras, key: chex.PRNGKey
-            ) -> Logits:
+            def _forward(x: JaxObservations, state_extras: StateExtras) -> Logits:
                 """Creates a neural network forward function for a predefined depth.
 
                 Args:
                     x: the observations, i.e., batched contexts.
                     state_extras: additional information for querying the neural networks.
-                    key: pseudo-random number generator.
 
                 Returns:
                     the neural network forward function at the predefined depth.
                 """
 
-                key, subkey = jax.random.split(key)
+                key, subkey = jax.random.split(hk.next_rng_key())
                 tree = Tree(
                     custom_network=self.custom_network,
                     tree_params=self.tree_params,
@@ -436,8 +435,10 @@ class CATX:
             i: jax.jit(func.apply) for i, func in transformed_layers.items()
         }
 
+        keys = jax.random.split(key, num=self.tree_params.depth)
+
         _depth_params = {
-            i: layer.init(x=obs, rng=key, state_extras=state_extras, key=key)
+            i: layer.init(x=obs, rng=keys[i], state_extras=state_extras)
             for i, layer in transformed_layers.items()
         }
 
@@ -520,7 +521,6 @@ class CATX:
             x=obs,
             rng=rng_key,
             state_extras=state_extras,
-            key=rng_key,
         )
 
         smooth_costs_filtered = jnp.multiply(mask_eq, smooth_costs)
@@ -601,7 +601,6 @@ class CATX:
                     x=obs,
                     rng=layer_key,
                     state_extras=state_extras,
-                    key=layer_key,
                 )
                 mask = logits < jnp.max(logits, axis=-1).reshape(
                     logits.shape[0:2] + (1,)
