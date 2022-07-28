@@ -1,5 +1,5 @@
 import functools
-from typing import Type, TYPE_CHECKING, Callable, Tuple, Dict
+from typing import Type, TYPE_CHECKING, Callable, Tuple, Dict, Optional
 
 import chex
 import haiku as hk
@@ -191,7 +191,7 @@ class CATX:
         obs: JaxObservations,
         key: chex.PRNGKey,
         epsilon: float,
-        network_extras: NetworkExtras,
+        network_extras: Optional[NetworkExtras] = None,
     ) -> CATXState:
         """Initializes the parameters of tree's neural networks,
         the forward functions, and the optimizer states.
@@ -208,7 +208,8 @@ class CATX:
             state: holds the CATX's training state.
         """
 
-        self._is_initialized = True
+        if network_extras is None:
+            network_extras = {}
 
         key, key_forward_fn, key_single_depth_fns = jax.random.split(key, num=3)
 
@@ -237,6 +238,8 @@ class CATX:
             key=key,
             network_extras=network_extras,
         )
+
+        self._is_initialized = True
 
         return state
 
