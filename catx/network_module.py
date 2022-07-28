@@ -22,7 +22,10 @@ class CustomHaikuNetwork(hk.Module):
 
     @abstractmethod
     def __call__(
-        self, obs: Observations, network_extras: NetworkExtras, key: PRNGKey
+        self,
+        obs: Observations,
+        key: PRNGKey,
+        network_extras: NetworkExtras,
     ) -> Logits:
         """Query the neural network.
 

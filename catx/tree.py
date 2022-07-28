@@ -126,7 +126,9 @@ class Tree(hk.Module):
         for i in range(self.tree_params.depth):
             n_leafs = 2 ** (i + 1)
             c = self.networks[i](
-                obs=obs, key=key, network_extras=network_extras,
+                obs=obs,
+                key=key,
+                network_extras=network_extras,
             ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c
         return logits

@@ -412,7 +412,9 @@ class CATX:
                     tree_params=self.tree_params,
                 )
                 return tree.networks[depth](
-                    obs=x, key=subkey, network_extras=network_extras,
+                    obs=x,
+                    key=subkey,
+                    network_extras=network_extras,
                 ).reshape(x.shape[0], n_leafs // 2, 2)
 
             return _forward

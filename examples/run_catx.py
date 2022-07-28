@@ -26,7 +26,10 @@ class MyCustomNetwork(CustomHaikuNetwork):
         )
 
     def __call__(
-        self, obs: Observations, key: PRNGKey, network_extras: NetworkExtras,
+        self,
+        obs: Observations,
+        key: PRNGKey,
+        network_extras: NetworkExtras,
     ) -> Logits:
         return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
 
