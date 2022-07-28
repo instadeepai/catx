@@ -1,17 +1,15 @@
-import dataclasses
 import functools
-from typing import Callable, Tuple, Dict, Type
+from typing import Type, TYPE_CHECKING, Callable, Tuple, Dict
 
 import chex
 import haiku as hk
 import jax
-import numpy as np
 import optax
 from jax import numpy as jnp
 from chex import Array
 from jax.stages import Wrapped
 
-from catx.network_builder import CustomHaikuNetwork
+from catx.network_module import CustomHaikuNetwork
 from catx.tree import Tree, TreeParameters
 from catx.type_defs import (
     Actions,
@@ -27,8 +25,13 @@ from catx.type_defs import (
     StateExtras,
 )
 
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from chex import dataclass
 
-@dataclasses.dataclass
+
+@dataclass
 class CATXState:
     """Holds the CATX's training state."""
 
@@ -83,6 +86,7 @@ class CATX:
         self._forward_fn: Wrapped
         self._forward_single_depth_fns: Dict[int, Wrapped]
 
+    @functools.partial(jax.jit, static_argnames=("self",))
     def sample(
         self,
         obs: Observations,
@@ -104,11 +108,6 @@ class CATX:
 
         obs = jnp.asarray(obs)
 
-        if not self._is_initialized:
-            raise RuntimeError(
-                'CATX instance must initialized before calling "sample" or "learn".'
-            )
-
         key, subkey = jax.random.split(state.key)
 
         actions, probabilities = self._forward_fn(
@@ -117,7 +116,6 @@ class CATX:
             rng=subkey,
             epsilon=epsilon,
             state_extras=state.state_extras,
-            # key=subkey,
         )
 
         state_new = CATXState(
@@ -128,8 +126,9 @@ class CATX:
             state_extras=state.state_extras,
         )
 
-        return np.array(actions), np.array(probabilities), state_new
+        return actions, probabilities, state_new
 
+    @functools.partial(jax.jit, static_argnames=("self",))
     def learn(
         self,
         obs: Observations,
@@ -157,11 +156,6 @@ class CATX:
         """
 
         obs = jnp.asarray(obs)
-
-        if not self._is_initialized:
-            raise RuntimeError(
-                'CATX instance must initialized before calling "sample" or "learn".'
-            )
 
         key, subkey = jax.random.split(state.key)
 
@@ -213,11 +207,6 @@ class CATX:
         Returns:
             state: holds the CATX's training state.
         """
-
-        if self._is_initialized:
-            raise RuntimeError(
-                "CATX instance has been initialized. It can only be initialized once."
-            )
 
         self._is_initialized = True
 
@@ -304,8 +293,7 @@ class CATX:
                 key_exploration,
                 key_exploitation,
                 key_sampling_exploration,
-                _,
-            ) = jax.random.split(hk.next_rng_key(), num=5)
+            ) = jax.random.split(hk.next_rng_key(), num=4)
 
             logits = tree(obs=x, key=key_tree_networks, state_extras=state_extras)
 

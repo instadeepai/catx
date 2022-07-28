@@ -5,7 +5,7 @@ import numpy as np
 from chex import Array, PRNGKey
 import jax.numpy as jnp
 
-from catx.network_builder import CustomHaikuNetwork
+from catx.network_module import CustomHaikuNetwork
 from catx.type_defs import Logits, StateExtras
 
 if TYPE_CHECKING:

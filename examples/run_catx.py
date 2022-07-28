@@ -6,7 +6,7 @@ import optax
 from chex import PRNGKey
 from jax import numpy as jnp
 from catx.catx import CATX
-from catx.network_builder import CustomHaikuNetwork
+from catx.network_module import CustomHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -22,7 +22,7 @@ class MyCustomNetwork(CustomHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
-            [10, 10] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+            [3] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
         )
 
     def __call__(
@@ -62,10 +62,12 @@ def main() -> None:
                 obs=obs, epsilon=epsilon, key=key, state_extras=state_extras
             )
 
-        state.state_extras["dropout_rate"] = 0.2
+        state.state_extras["dropout_rate"] = 0.1
         actions, probabilities, state = catx.sample(
             obs=obs, epsilon=epsilon, state=state
         )
+        actions = np.array(actions)
+        probabilities = np.array(probabilities)
 
         costs = environment.get_costs(actions=actions)
 
