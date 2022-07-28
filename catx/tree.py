@@ -6,7 +6,7 @@ from chex import Array, PRNGKey
 import jax.numpy as jnp
 
 from catx.network_module import CustomHaikuNetwork
-from catx.type_defs import Logits, StateExtras
+from catx.type_defs import Logits, NetworkExtras
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -109,14 +109,14 @@ class Tree(hk.Module):
         }
 
     def __call__(
-        self, obs: Array, key: PRNGKey, state_extras: StateExtras
+        self, obs: Array, key: PRNGKey, network_extras: NetworkExtras
     ) -> Dict[int, Logits]:
         """Query the neural networks of the tree.
 
         Args:
             obs: the observations, i.e., batched contexts.
             key: pseudo-random number generator.
-            state_extras: additional information for querying the neural networks.
+            network_extras: additional information for querying the neural networks.
 
         Returns:
             logits: a dictionary of the networks' logits grouped pairwise.
@@ -125,8 +125,8 @@ class Tree(hk.Module):
         logits = {}
         for i in range(self.tree_params.depth):
             n_leafs = 2 ** (i + 1)
-            c = self.networks[i](obs=obs, state_extras=state_extras, key=key).reshape(
-                -1, n_leafs // 2, 2
-            )
+            c = self.networks[i](
+                obs=obs, key=key, network_extras=network_extras,
+            ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c
         return logits

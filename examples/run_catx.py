@@ -10,7 +10,7 @@ from catx.network_module import CustomHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
 
-from catx.type_defs import Logits, Observations, StateExtras
+from catx.type_defs import Logits, Observations, NetworkExtras
 from examples.openml_environment import OpenMLEnvironment
 
 
@@ -22,13 +22,13 @@ class MyCustomNetwork(CustomHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
-            [3] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+            [10, 10] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
         )
 
     def __call__(
-        self, obs: Observations, state_extras: StateExtras, key: PRNGKey
+        self, obs: Observations, key: PRNGKey, network_extras: NetworkExtras,
     ) -> Logits:
-        return self.network(obs, dropout_rate=state_extras["dropout_rate"], rng=key)
+        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
 
 
 def main() -> None:
@@ -57,12 +57,12 @@ def main() -> None:
             break
 
         if i == 0:
-            state_extras = {"dropout_rate": 0.1}
+            network_extras = {"dropout_rate": 0.2}
             state = catx.init(
-                obs=obs, epsilon=epsilon, key=key, state_extras=state_extras
+                obs=obs, epsilon=epsilon, key=key, network_extras=network_extras
             )
 
-        state.state_extras["dropout_rate"] = 0.1
+        state.network_extras["dropout_rate"] = 0.2
         actions, probabilities, state = catx.sample(
             obs=obs, epsilon=epsilon, state=state
         )
@@ -71,7 +71,7 @@ def main() -> None:
 
         costs = environment.get_costs(actions=actions)
 
-        state.state_extras["dropout_rate"] = 0.0
+        state.network_extras["dropout_rate"] = 0.0
         state = catx.learn(
             obs=obs,
             actions=actions,

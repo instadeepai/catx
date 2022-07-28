@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import haiku as hk
 from chex import PRNGKey
-from catx.type_defs import Observations, StateExtras, Logits
+from catx.type_defs import Observations, NetworkExtras, Logits
 
 
 class CustomHaikuNetwork(hk.Module):
@@ -22,13 +22,13 @@ class CustomHaikuNetwork(hk.Module):
 
     @abstractmethod
     def __call__(
-        self, obs: Observations, state_extras: StateExtras, key: PRNGKey
+        self, obs: Observations, network_extras: NetworkExtras, key: PRNGKey
     ) -> Logits:
         """Query the neural network.
 
         Args:
             obs: the observations, i.e., batched contexts.
-            state_extras: additional information for querying the neural networks.
+            network_extras: additional information for querying the neural networks.
             key: pseudo-random number generator.
 
         Returns:

@@ -20,4 +20,4 @@ JaxProbabilities: TypeAlias = Array
 
 Logits: TypeAlias = Array
 
-StateExtras: TypeAlias = Dict[str, Any]
+NetworkExtras: TypeAlias = Dict[str, Any]
