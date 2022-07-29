@@ -12,8 +12,8 @@ For simplicity, we normalize the feature and action spaces.
 ```python
 from typing import Optional
 import tensorflow as tf
-import numpy as np
 from sklearn.datasets import fetch_openml
+import numpy as np
 from catx.type_defs import Actions, Costs, Observations
 
 class BlackFridayEnvironment:
@@ -58,7 +58,7 @@ class BlackFridayEnvironment:
 
 ## Training loop
 One of the main advantages of CATX is the custom network builder.
-In this example, we use a multilayer perceptron (MLP) network builder.
+In this example, we use a multilayer perceptron (MLP) network with dropouts.
 > **_IMPORTANT:_**  The number of neurons at the output layer should be 2**(depth+1)
 
 ```python
@@ -67,23 +67,40 @@ import time
 from typing import List
 import haiku as hk
 import jax
+from chex import PRNGKey
 import optax
 from jax import numpy as jnp
 from catx.catx import CATX
-from catx.network_builder import NetworkBuilder
+from catx.network_module import CustomHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
+from catx.type_defs import Observations, NetworkExtras, Logits
+
 
 # Network builder
-class MLPBuilder(NetworkBuilder):
-    def create_network(self, depth: int) -> hk.Module:
-        return hk.nets.MLP([10, 10] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
+class MyCustomNetwork(CustomHaikuNetwork):
+    def __init__(self, depth: int) -> None:
+        super().__init__(depth)
+        self.network = hk.nets.MLP(
+            [10, 10] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+        )
+
+    def __call__(
+        self,
+        obs: Observations,
+        key: PRNGKey,
+        network_extras: NetworkExtras,
+    ) -> Logits:
+        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
+
 
 def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w
 
+
 def main() -> None:
     start_time = time.time()
+    epsilon = 0.05
 
     # JAX pseudo-random number generator
     rng_key = jax.random.PRNGKey(42)
@@ -94,8 +111,7 @@ def main() -> None:
 
     # Instantiate CATX
     catx = CATX(
-        rng_key=subkey,
-        network_builder=MLPBuilder(),
+        custom_network=MyCustomNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,
@@ -103,13 +119,35 @@ def main() -> None:
 
     # Training loop
     costs_cumulative = []
-    for _ in range(1000):
+    for i in range(1000):
         obs = environment.get_new_observations()
         if obs is None:
             break
-        actions, probabilities = catx.sample(obs=obs, epsilon=0.05)
+
+        if i == 0:
+            network_extras = {"dropout_rate": 0.2}
+            state = catx.init(
+                obs=obs, epsilon=epsilon, key=key, network_extras=network_extras
+            )
+
+        state.network_extras["dropout_rate"] = 0.2
+        actions, probabilities, state = catx.sample(
+            obs=obs, epsilon=epsilon, state=state
+        )
+        actions = np.array(actions)
+        probabilities = np.array(probabilities)
+
         costs = environment.get_costs(actions=actions)
-        catx.learn(obs, actions, probabilities, costs)
+
+        state.network_extras["dropout_rate"] = 0.0
+        state = catx.learn(
+            obs=obs,
+            actions=actions,
+            probabilities=probabilities,
+            costs=costs,
+            state=state,
+        )
+
         costs_cumulative.append(jnp.mean(costs).item())
 
     plt.plot(costs_cumulative)
@@ -118,7 +156,6 @@ def main() -> None:
     plt.show()
 
     print(f"CATX training took {time.time() - start_time:.1f}s")
-
 
 if __name__ == "__main__":
     main()
