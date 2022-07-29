@@ -13,7 +13,14 @@ from jax import numpy as jnp
 from catx.catx import CATX, CATXState
 from catx.network_module import CustomHaikuNetwork
 
-from catx.type_defs import Observations, Actions, Probabilities, JaxObservations, JaxProbabilities, JaxActions
+from catx.type_defs import (
+    Observations,
+    Actions,
+    Probabilities,
+    JaxObservations,
+    JaxProbabilities,
+    JaxActions,
+)
 
 
 @pytest.fixture
@@ -38,6 +45,7 @@ def catx(
     )
 
     return catx
+
 
 @pytest.fixture
 def catx_init(
@@ -91,6 +99,7 @@ def catx_with_dropout_extras(
 
     return catx
 
+
 @pytest.fixture
 def catx_init_with_extras(
     custom_network_with_dropout_extras: Type[CustomHaikuNetwork],
@@ -116,7 +125,9 @@ def catx_init_with_extras(
     )
 
     network_extras = {"dropout_rate": 0.2}
-    state = catx.init(obs=jax_observations, epsilon=epsilon, key=key, network_extras=network_extras)
+    state = catx.init(
+        obs=jax_observations, epsilon=epsilon, key=key, network_extras=network_extras
+    )
 
     return catx, state
 
@@ -125,6 +136,7 @@ def catx_init_with_extras(
 def create_forward_fn_mock(mocker: MockerFixture) -> MagicMock:
     mk = mocker.patch("catx.catx.CATX._create_forward_fn")
     return mk  # type: ignore
+
 
 # @pytest.fixture
 # def forward_fn_mock(mocker: MockerFixture) -> MagicMock:
@@ -214,14 +226,21 @@ def test_catx__init_with_extras(
 
 
 @pytest.mark.parametrize("catx_with_init", ["catx_init", "catx_init_with_extras"])
-def test_catx__sample(catx_with_init: str, request: pytest.FixtureRequest, observations: Observations, epsilon: float) -> None:
+def test_catx__sample(
+    catx_with_init: str,
+    request: pytest.FixtureRequest,
+    observations: Observations,
+    epsilon: float,
+) -> None:
     catx_with_init = request.getfixturevalue(catx_with_init)
     catx, state = catx_with_init
-    actions, probabilities, state = catx.sample(obs=observations, epsilon=epsilon, state=state)
+    actions, probabilities, state = catx.sample(
+        obs=observations, epsilon=epsilon, state=state
+    )
 
     # Validate sample return type and shape.
-    assert isinstance(probabilities, JaxProbabilities)
-    assert isinstance(actions, JaxActions)
+    assert isinstance(probabilities, JaxProbabilities)  # type: ignore
+    assert isinstance(actions, JaxActions)  # type: ignore
     chex.assert_equal_shape([actions, probabilities, observations[:, 0]])
 
     # Validate stochasticity in sampling.
@@ -238,7 +257,9 @@ def test_catx__sample_action_range(
     catx_init: Tuple[CATX, CATXState], observations: Observations, epsilon: float
 ) -> None:
     catx, state = catx_init
-    actions, probabilities, state = catx.sample(obs=observations, epsilon=epsilon, state=state)
+    actions, probabilities, state = catx.sample(
+        obs=observations, epsilon=epsilon, state=state
+    )
     assert np.all(catx._action_min <= actions)
     assert np.all(actions <= catx._action_max)
 
@@ -247,7 +268,9 @@ def test_catx__sample_action_range(
     "action_min, action_max", [(0.0, 0.0), (1.0, 0.0), (-5.0, -10.0)]
 )
 def test_catx__init_action_range_sad(
-    custom_network_without_extras: Type[CustomHaikuNetwork], action_min: float, action_max: float
+    custom_network_without_extras: Type[CustomHaikuNetwork],
+    action_min: float,
+    action_max: float,
 ) -> None:
     with pytest.raises(
         AssertionError,
@@ -279,9 +302,12 @@ def test_catx__learn_param_update(
     params_pre = state.params
 
     state = catx.learn(
-        obs=observations, actions=actions, probabilities=probabilities, costs=costs, state=state,
+        obs=observations,
+        actions=actions,
+        probabilities=probabilities,
+        costs=costs,
+        state=state,
     )
-
 
     key_post = state.key
     depth_params_post = state.depth_params
