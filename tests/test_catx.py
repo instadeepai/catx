@@ -138,13 +138,6 @@ def create_forward_fn_mock(mocker: MockerFixture) -> MagicMock:
     return mk  # type: ignore
 
 
-# @pytest.fixture
-# def forward_fn_mock(mocker: MockerFixture) -> MagicMock:
-#     mk = mocker.patch("catx.catx.CATX._forward_fn")
-#     mk.return_value = MagicMock(), MagicMock()
-#     return mk  # type: ignore
-
-
 @pytest.fixture
 def create_forward_single_depth_fns_mock(mocker: MockerFixture) -> MagicMock:
     mk = mocker.patch("catx.catx.CATX._create_forward_single_depth_fns")
