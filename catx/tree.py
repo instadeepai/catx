@@ -2,7 +2,7 @@ from typing import Dict, Optional, TYPE_CHECKING, Type
 
 import haiku as hk
 import numpy as np
-from chex import Array, PRNGKey
+from chex import Array
 import jax.numpy as jnp
 
 from catx.network_module import CATXHaikuNetwork
@@ -107,14 +107,11 @@ class Tree(hk.Module):
             depth: catx_network(depth=depth) for depth in range(self.tree_params.depth)
         }
 
-    def __call__(
-        self, obs: Array, key: PRNGKey, network_extras: NetworkExtras
-    ) -> Dict[int, Logits]:
+    def __call__(self, obs: Array, network_extras: NetworkExtras) -> Dict[int, Logits]:
         """Query the neural networks of the tree.
 
         Args:
             obs: the observations, i.e., batched contexts.
-            key: pseudo-random number generator.
             network_extras: additional information for querying the neural networks.
 
         Returns:
@@ -126,7 +123,7 @@ class Tree(hk.Module):
             n_leafs = 2 ** (i + 1)
             c = self.networks[i](
                 obs=obs,
-                key=key,
+                key=hk.next_rng_key(),
                 network_extras=network_extras,
             ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c

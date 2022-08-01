@@ -294,13 +294,12 @@ class CATX:
             )
 
             (
-                key_tree_networks,
                 key_exploration,
                 key_exploitation,
                 key_sampling_exploration,
-            ) = jax.random.split(hk.next_rng_key(), num=4)
+            ) = jax.random.split(hk.next_rng_key(), num=3)
 
-            logits = tree(obs=x, key=key_tree_networks, network_extras=network_extras)
+            logits = tree(obs=x, network_extras=network_extras)
 
             batch_size = x.shape[0]
             mask = logits[0] < jnp.max(logits[0], axis=(1, 2)).reshape(batch_size, 1, 1)
@@ -409,14 +408,13 @@ class CATX:
                     the neural network forward function at the predefined depth.
                 """
 
-                key, subkey = jax.random.split(hk.next_rng_key())
                 tree = Tree(
                     catx_network=self.catx_network,
                     tree_params=self.tree_params,
                 )
                 return tree.networks[depth](
                     obs=x,
-                    key=subkey,
+                    key=hk.next_rng_key(),
                     network_extras=network_extras,
                 ).reshape(x.shape[0], n_leafs // 2, 2)
 

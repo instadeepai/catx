@@ -81,9 +81,7 @@ def test_tree(
             tree_params=tree_parameters,
         )
 
-        key, subkey = jax.random.split(hk.next_rng_key())
-
-        output_logits = tree(obs=x, key=subkey, network_extras=network_extras)
+        output_logits = tree(obs=x, network_extras=network_extras)
 
         # Validate the tree has as many neural networks as depth.
         assert jnp.shape(jax.tree_leaves(tree.networks))[0] == tree_parameters.depth
