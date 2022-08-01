@@ -56,7 +56,8 @@ class BlackFridayEnvironment:
 ```
 
 ## Training loop
-One of the main advantages of CATX is the custom network builder.
+One of the main advantages of CATX is the flexibility
+of defining a custom neural network architecture within the tree.
 In this example, we use a multilayer perceptron (MLP) network with dropouts.
 > **_IMPORTANT:_**  The number of neurons at the output layer should be 2**(depth+1)
 
@@ -70,14 +71,14 @@ from chex import PRNGKey
 import optax
 from jax import numpy as jnp
 from catx.catx import CATX
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
 from catx.type_defs import Observations, NetworkExtras, Logits
 
 
 # Network builder
-class MyCustomNetwork(CustomHaikuNetwork):
+class MyCATXNetwork(CATXHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
@@ -110,7 +111,7 @@ def main() -> None:
 
     # Instantiate CATX
     catx = CATX(
-        custom_network=MyCustomNetwork,
+        catx_network=MyCATXNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,

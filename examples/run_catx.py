@@ -6,7 +6,7 @@ import optax
 from chex import PRNGKey
 from jax import numpy as jnp
 from catx.catx import CATX
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,7 +18,7 @@ def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w
 
 
-class MyCustomNetwork(CustomHaikuNetwork):
+class MyCATXNetwork(CATXHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
@@ -47,7 +47,7 @@ def main() -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        custom_network=MyCustomNetwork,
+        catx_network=MyCATXNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,

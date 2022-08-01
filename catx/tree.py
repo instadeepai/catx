@@ -5,7 +5,7 @@ import numpy as np
 from chex import Array, PRNGKey
 import jax.numpy as jnp
 
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 from catx.type_defs import Logits, NetworkExtras
 
 if TYPE_CHECKING:
@@ -88,14 +88,14 @@ class TreeParameters:
 class Tree(hk.Module):
     def __init__(
         self,
-        custom_network: Type[CustomHaikuNetwork],
+        catx_network: Type[CATXHaikuNetwork],
         tree_params: TreeParameters,
         name: Optional[str] = None,
     ):
         """The tree as a JAX Haiku module.
 
         Args:
-            custom_network: class specifying the neural network architecture.
+            catx_network: class specifying the neural network architecture.
             tree_params: object holding the tree parameters.
             name: name of the tree.
         """
@@ -104,8 +104,7 @@ class Tree(hk.Module):
         self.tree_params = tree_params
 
         self.networks = {
-            depth: custom_network(depth=depth)
-            for depth in range(self.tree_params.depth)
+            depth: catx_network(depth=depth) for depth in range(self.tree_params.depth)
         }
 
     def __call__(

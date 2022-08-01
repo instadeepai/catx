@@ -8,7 +8,7 @@ import pytest
 import numpy as np
 from chex import assert_type
 
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 from catx.tree import TreeParameters, Tree
 from catx.type_defs import JaxObservations, Logits, NetworkExtras
 
@@ -67,7 +67,7 @@ def test_tree_parameters__bandwidth(bandwidth: float) -> None:
 
 
 def test_tree(
-    custom_network_without_extras: Type[CustomHaikuNetwork],
+    catx_network_without_extras: Type[CATXHaikuNetwork],
     tree_parameters: TreeParameters,
     jax_observations: JaxObservations,
     epsilon: float,
@@ -77,7 +77,7 @@ def test_tree(
         network_extras: NetworkExtras,
     ) -> Dict[int, Logits]:
         tree = Tree(
-            custom_network=custom_network_without_extras,
+            catx_network=catx_network_without_extras,
             tree_params=tree_parameters,
         )
 

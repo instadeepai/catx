@@ -4,7 +4,7 @@ from chex import PRNGKey
 from catx.type_defs import Observations, NetworkExtras, Logits
 
 
-class CustomHaikuNetwork(hk.Module):
+class CATXHaikuNetwork(hk.Module):
     """An interface for implementing a custom Haiku neural network."""
 
     @abstractmethod

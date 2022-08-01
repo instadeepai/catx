@@ -9,7 +9,7 @@ import tensorflow as tf
 import numpy as np
 from sklearn.datasets import fetch_openml
 from catx.catx import CATX
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 from catx.type_defs import Actions, Costs, Observations, NetworkExtras, Logits
 
 
@@ -58,7 +58,7 @@ class OpenMLEnvironment:
         )
 
 
-class MyCustomNetwork(CustomHaikuNetwork):
+class MyCATXNetwork(CATXHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
@@ -86,7 +86,7 @@ def test_catx_convergence(dataset_id_loss: Tuple[int, float]) -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        custom_network=MyCustomNetwork,
+        catx_network=MyCATXNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,

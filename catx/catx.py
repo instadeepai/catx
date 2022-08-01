@@ -9,7 +9,7 @@ from jax import numpy as jnp
 from chex import Array
 from jax.stages import Wrapped
 
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 from catx.tree import Tree, TreeParameters
 from catx.type_defs import (
     Actions,
@@ -47,7 +47,7 @@ class CATX:
 
     def __init__(
         self,
-        custom_network: Type[CustomHaikuNetwork],
+        catx_network: Type[CATXHaikuNetwork],
         optimizer: optax.GradientTransformation,
         discretization_parameter: int,
         bandwidth: float,
@@ -57,7 +57,7 @@ class CATX:
         """Instantiate a CATX instance with its corresponding tree.
 
         Args:
-            custom_network: class specifying the neural network architecture.
+            catx_network: class specifying the neural network architecture.
             optimizer: optax optimizer object.
             discretization_parameter: the number of action centroids.
             bandwidth: the bucket half width covered by action centroid.
@@ -72,7 +72,7 @@ class CATX:
 
         self.discretization_parameter = discretization_parameter
         self.bandwidth = bandwidth
-        self.custom_network = custom_network
+        self.catx_network = catx_network
         self.optimizer = optimizer
         self.tree_params = TreeParameters.construct(
             bandwidth=bandwidth, discretization_parameter=discretization_parameter
@@ -289,7 +289,7 @@ class CATX:
             """
 
             tree = Tree(
-                custom_network=self.custom_network,
+                catx_network=self.catx_network,
                 tree_params=self.tree_params,
             )
 
@@ -411,7 +411,7 @@ class CATX:
 
                 key, subkey = jax.random.split(hk.next_rng_key())
                 tree = Tree(
-                    custom_network=self.custom_network,
+                    catx_network=self.catx_network,
                     tree_params=self.tree_params,
                 )
                 return tree.networks[depth](

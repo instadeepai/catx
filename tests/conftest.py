@@ -6,7 +6,7 @@ import pytest
 import jax.numpy as jnp
 from chex import ArrayNumpy, PRNGKey
 
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 import haiku as hk
 
 from catx.tree import TreeParameters
@@ -20,7 +20,7 @@ from catx.type_defs import (
 )
 
 
-class CustomNetworkWithDropoutExtras(CustomHaikuNetwork):
+class CatxNetworkWithDropoutExtras(CATXHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
@@ -36,7 +36,7 @@ class CustomNetworkWithDropoutExtras(CustomHaikuNetwork):
         return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
 
 
-class CustomNetworkWithoutExtras(CustomHaikuNetwork):
+class CatxNetworkWithoutExtras(CATXHaikuNetwork):
     def __init__(self, depth: int) -> None:
         super().__init__(depth)
         self.network = hk.nets.MLP(
@@ -53,13 +53,13 @@ class CustomNetworkWithoutExtras(CustomHaikuNetwork):
 
 
 @pytest.fixture
-def custom_network_without_extras() -> Type[CustomHaikuNetwork]:
-    return CustomNetworkWithoutExtras
+def catx_network_without_extras() -> Type[CATXHaikuNetwork]:
+    return CatxNetworkWithoutExtras
 
 
 @pytest.fixture
-def custom_network_with_dropout_extras() -> Type[CustomHaikuNetwork]:
-    return CustomNetworkWithDropoutExtras
+def catx_network_with_dropout_extras() -> Type[CATXHaikuNetwork]:
+    return CatxNetworkWithDropoutExtras
 
 
 @pytest.fixture

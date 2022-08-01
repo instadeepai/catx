@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 from jax import numpy as jnp
 
 from catx.catx import CATX, CATXState
-from catx.network_module import CustomHaikuNetwork
+from catx.network_module import CATXHaikuNetwork
 
 from catx.type_defs import (
     Observations,
@@ -25,7 +25,7 @@ from catx.type_defs import (
 
 @pytest.fixture
 def catx(
-    custom_network_without_extras: Type[CustomHaikuNetwork],
+    catx_network_without_extras: Type[CATXHaikuNetwork],
     request: pytest.FixtureRequest = None,
 ) -> CATX:
     if not request:
@@ -36,7 +36,7 @@ def catx(
         action_max = request.param[1]
 
     catx = CATX(
-        custom_network=custom_network_without_extras,
+        catx_network=catx_network_without_extras,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=4,
         bandwidth=1.5 / 4,
@@ -62,7 +62,7 @@ def catx_init(
 
 @pytest.fixture
 def catx_with_dropout_extras(
-    custom_network_with_dropout_extras: Type[CustomHaikuNetwork],
+    catx_network_with_dropout_extras: Type[CATXHaikuNetwork],
     request: pytest.FixtureRequest = None,
 ) -> CATX:
     if not request:
@@ -73,7 +73,7 @@ def catx_with_dropout_extras(
         action_max = request.param[1]
 
     catx = CATX(
-        custom_network=custom_network_with_dropout_extras,
+        catx_network=catx_network_with_dropout_extras,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=4,
         bandwidth=1.5 / 4,
@@ -217,7 +217,7 @@ def test_catx__sample_action_range(
     "action_min, action_max", [(0.0, 0.0), (1.0, 0.0), (-5.0, -10.0)]
 )
 def test_catx__init_action_range_sad(
-    custom_network_without_extras: Type[CustomHaikuNetwork],
+    catx_network_without_extras: Type[CATXHaikuNetwork],
     action_min: float,
     action_max: float,
 ) -> None:
@@ -227,7 +227,7 @@ def test_catx__init_action_range_sad(
         f"got: action_max={action_max} and action_min={action_min}.",
     ):
         _ = CATX(
-            custom_network=custom_network_without_extras,
+            catx_network=catx_network_without_extras,
             optimizer=optax.adam(learning_rate=0.01),
             discretization_parameter=4,
             bandwidth=1.5 / 4,
