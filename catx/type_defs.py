@@ -1,5 +1,5 @@
 try:
-    from typing import TypeAlias, Dict, Any
+    from typing import Any, Dict, TypeAlias
 except ImportError:
     from typing_extensions import TypeAlias
 

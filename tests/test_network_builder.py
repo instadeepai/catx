@@ -1,7 +1,6 @@
-from unittest.mock import patch
-
 import haiku as hk
 from chex import PRNGKey
+from unittest.mock import patch
 
 from catx.network_module import CATXHaikuNetwork
 

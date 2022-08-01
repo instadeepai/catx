@@ -1,24 +1,24 @@
-from typing import List, Type, Tuple
-from unittest.mock import MagicMock
+from typing import List, Tuple, Type
 
 import chex
 import jax
 import numpy as np
 import optax
 import pytest
-from chex import ArrayNumpy, Array, PRNGKey
+from chex import Array, ArrayNumpy, PRNGKey
 from jax import numpy as jnp
 from pytest_mock import MockerFixture
+from unittest.mock import MagicMock
 
 from catx.catx import CATX, CATXState
 from catx.network_module import CATXHaikuNetwork
 from catx.type_defs import (
-    Observations,
     Actions,
-    Probabilities,
+    JaxActions,
     JaxObservations,
     JaxProbabilities,
-    JaxActions,
+    Observations,
+    Probabilities,
 )
 
 

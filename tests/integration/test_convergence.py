@@ -1,4 +1,4 @@
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import haiku as hk
 import jax
@@ -11,7 +11,7 @@ from sklearn.datasets import fetch_openml
 
 from catx.catx import CATX
 from catx.network_module import CATXHaikuNetwork
-from catx.type_defs import Actions, Costs, Observations, NetworkExtras, Logits
+from catx.type_defs import Actions, Costs, Logits, NetworkExtras, Observations
 
 
 def moving_average(x: List[float], w: int) -> np.ndarray:

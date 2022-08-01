@@ -1,7 +1,7 @@
-import functools
-from typing import Type, TYPE_CHECKING, Callable, Tuple, Dict, Optional
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Tuple, Type
 
 import chex
+import functools
 import haiku as hk
 import jax
 import optax
@@ -16,13 +16,13 @@ from catx.type_defs import (
     Costs,
     JaxActions,
     JaxCosts,
+    JaxLoss,
     JaxObservations,
     JaxProbabilities,
     Logits,
+    NetworkExtras,
     Observations,
     Probabilities,
-    JaxLoss,
-    NetworkExtras,
 )
 
 if TYPE_CHECKING:

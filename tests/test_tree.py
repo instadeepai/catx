@@ -9,7 +9,7 @@ import pytest
 from chex import assert_type
 
 from catx.network_module import CATXHaikuNetwork
-from catx.tree import TreeParameters, Tree
+from catx.tree import Tree, TreeParameters
 from catx.type_defs import JaxObservations, Logits, NetworkExtras
 
 

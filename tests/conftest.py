@@ -10,12 +10,12 @@ from chex import ArrayNumpy, PRNGKey
 from catx.network_module import CATXHaikuNetwork
 from catx.tree import TreeParameters
 from catx.type_defs import (
-    JaxObservations,
-    Observations,
     Actions,
-    Probabilities,
+    JaxObservations,
     Logits,
     NetworkExtras,
+    Observations,
+    Probabilities,
 )
 
 

@@ -4,11 +4,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.datasets import fetch_openml
 
-from catx.type_defs import (
-    Actions,
-    Costs,
-    Observations,
-)
+from catx.type_defs import Actions, Costs, Observations
 
 
 class OpenMLEnvironment:

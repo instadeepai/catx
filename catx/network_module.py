@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 import haiku as hk
 
-from catx.type_defs import Observations, NetworkExtras, Logits
+from catx.type_defs import Logits, NetworkExtras, Observations
 
 
 class CATXHaikuNetwork(hk.Module):

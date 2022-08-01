@@ -1,4 +1,3 @@
-import time
 from typing import List
 
 import haiku as hk
@@ -6,11 +5,12 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 import optax
+import time
 from jax import numpy as jnp
 
 from catx.catx import CATX
 from catx.network_module import CATXHaikuNetwork
-from catx.type_defs import Logits, Observations, NetworkExtras
+from catx.type_defs import Logits, NetworkExtras, Observations
 from examples.openml_environment import OpenMLEnvironment
 
 

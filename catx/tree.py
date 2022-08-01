@@ -1,4 +1,4 @@
-from typing import Dict, Optional, TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Dict, Optional, Type
 
 import haiku as hk
 import jax.numpy as jnp
