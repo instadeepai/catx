@@ -1,12 +1,12 @@
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, Optional, Type
 
 import haiku as hk
+import jax.numpy as jnp
 import numpy as np
 from chex import Array
-import jax.numpy as jnp
 
-from catx.network_builder import NetworkBuilder
-from catx.type_defs import Logits
+from catx.network_module import CATXHaikuNetwork
+from catx.type_defs import Logits, NetworkExtras
 
 if TYPE_CHECKING:
     from dataclasses import dataclass
@@ -88,14 +88,14 @@ class TreeParameters:
 class Tree(hk.Module):
     def __init__(
         self,
-        network_builder: NetworkBuilder,
+        catx_network: Type[CATXHaikuNetwork],
         tree_params: TreeParameters,
         name: Optional[str] = None,
     ):
         """The tree as a JAX Haiku module.
 
         Args:
-            network_builder: specify the neural network architecture for each depth in the tree.
+            catx_network: class specifying the neural network architecture.
             tree_params: object holding the tree parameters.
             name: name of the tree.
         """
@@ -104,15 +104,15 @@ class Tree(hk.Module):
         self.tree_params = tree_params
 
         self.networks = {
-            depth: network_builder.create_network(depth=depth)
-            for depth in range(self.tree_params.depth)
+            depth: catx_network(depth=depth) for depth in range(self.tree_params.depth)
         }
 
-    def __call__(self, obs: Array) -> Dict[int, Logits]:
+    def __call__(self, obs: Array, network_extras: NetworkExtras) -> Dict[int, Logits]:
         """Query the neural networks of the tree.
 
         Args:
             obs: the observations, i.e., batched contexts.
+            network_extras: additional information for querying the neural networks.
 
         Returns:
             logits: a dictionary of the networks' logits grouped pairwise.
@@ -121,6 +121,9 @@ class Tree(hk.Module):
         logits = {}
         for i in range(self.tree_params.depth):
             n_leafs = 2 ** (i + 1)
-            c = self.networks[i](obs).reshape(-1, n_leafs // 2, 2)
+            c = self.networks[i](
+                obs=obs,
+                network_extras=network_extras,
+            ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c
         return logits

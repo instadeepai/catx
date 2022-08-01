@@ -1,13 +1,16 @@
-import time
 from typing import List
+
 import haiku as hk
 import jax
-import optax
-from jax import numpy as jnp
-from catx.catx import CATX
-from catx.network_builder import NetworkBuilder
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import optax
+import time
+from jax import numpy as jnp
+
+from catx.catx import CATX
+from catx.network_module import CATXHaikuNetwork
+from catx.type_defs import Logits, NetworkExtras, Observations
 from examples.openml_environment import OpenMLEnvironment
 
 
@@ -15,9 +18,21 @@ def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w
 
 
-class MLPBuilder(NetworkBuilder):
-    def create_network(self, depth: int) -> hk.Module:
-        return hk.nets.MLP([10, 10] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
+class MyCATXNetwork(CATXHaikuNetwork):
+    def __init__(self, depth: int) -> None:
+        super().__init__(depth)
+        self.network = hk.nets.MLP(
+            [10, 10] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+        )
+
+    def __call__(
+        self,
+        obs: Observations,
+        network_extras: NetworkExtras,
+    ) -> Logits:
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
 
 
 def main() -> None:
@@ -33,24 +48,39 @@ def main() -> None:
     environment = OpenMLEnvironment(dataset_id=dataset_id, batch_size=batch_size)
 
     catx = CATX(
-        rng_key=subkey,
-        network_builder=MLPBuilder(),
+        catx_network=MyCATXNetwork,
         optimizer=optax.adam(learning_rate=0.01),
         discretization_parameter=8,
         bandwidth=1 / 8,
     )
 
     costs_cumulative = []
-    for _ in range(1000):
+    for i in range(1000):
         obs = environment.get_new_observations()
         if obs is None:
             break
 
-        actions, probabilities = catx.sample(obs=obs, epsilon=epsilon)
+        if i == 0:
+            network_extras = {"dropout_rate": 0.0}
+            state = catx.init(
+                obs=obs, epsilon=epsilon, key=key, network_extras=network_extras
+            )
+
+        state.network_extras["dropout_rate"] = 0.0
+        actions, probabilities, state = catx.sample(
+            obs=obs, epsilon=epsilon, state=state
+        )
 
         costs = environment.get_costs(actions=actions)
 
-        catx.learn(obs, actions, probabilities, costs)
+        state.network_extras["dropout_rate"] = 0.2
+        state = catx.learn(
+            obs=obs,
+            actions=actions,
+            probabilities=probabilities,
+            costs=costs,
+            state=state,
+        )
 
         costs_cumulative.append(jnp.mean(costs).item())
 

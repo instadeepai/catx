@@ -1,37 +1,20 @@
+import haiku as hk
+from chex import PRNGKey
 from unittest.mock import patch
 
-import jax
-
-from catx.network_builder import NetworkBuilder
-import haiku as hk
+from catx.network_module import CATXHaikuNetwork
 
 
-@patch("catx.network_builder.NetworkBuilder.__abstractmethods__", set())
-def test_network_builder() -> None:
-    network_builder = NetworkBuilder()  # type: ignore
-    assert "create_network" in dir(network_builder)
-    assert network_builder.create_network.__isabstractmethod__  # type: ignore
-
-
-def test_network_builder__create_network() -> None:
-    # Sanity check
-    class MLPBuilder(NetworkBuilder):
-        def create_network(self, depth: int) -> hk.Module:
-            return hk.nets.MLP([3] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
-
-    class BuilderMocker(hk.Module):
-        def __init__(self, network_builder: NetworkBuilder) -> None:
-            super().__init__("network_mocker_built")
-            self.networks = network_builder.create_network(depth=2)
-
-        def __call__(self) -> int:
-            return 1
-
+@patch("catx.network_module.CATXHaikuNetwork.__abstractmethods__", set())
+def test_network_module(key: PRNGKey) -> None:
     def _forward() -> None:
-        BuilderMocker(network_builder=builder)
-
-    builder = MLPBuilder()
+        netowrk = CATXHaikuNetwork(depth=2)  # type: ignore
+        assert hasattr(netowrk, "depth")
 
     forward = hk.transform(_forward)
-    rng_key, subkey = jax.random.split(jax.random.PRNGKey(42))
-    _ = forward.init(rng=subkey)
+    params = forward.init(rng=key)
+    forward.apply(params, key)
+
+    assert "__call__" in dir(CATXHaikuNetwork)
+    assert CATXHaikuNetwork.__call__.__isabstractmethod__  # type: ignore
+    assert issubclass(CATXHaikuNetwork, hk.Module)

@@ -1,16 +1,16 @@
-from typing import Dict
+from typing import Dict, Type
 
 import chex
-import jax
 import haiku as hk
+import jax
 import jax.numpy as jnp
-import pytest
 import numpy as np
+import pytest
 from chex import assert_type
 
-from catx.network_builder import NetworkBuilder
-from catx.tree import TreeParameters, Tree
-from catx.type_defs import JaxObservations, Logits
+from catx.network_module import CATXHaikuNetwork
+from catx.tree import Tree, TreeParameters
+from catx.type_defs import JaxObservations, Logits, NetworkExtras
 
 
 @pytest.mark.parametrize("bandwidth", [1.5 / 4, 1 / 8])
@@ -67,17 +67,21 @@ def test_tree_parameters__bandwidth(bandwidth: float) -> None:
 
 
 def test_tree(
-    mlp_builder: NetworkBuilder,
+    catx_network_without_extras: Type[CATXHaikuNetwork],
     tree_parameters: TreeParameters,
     jax_observations: JaxObservations,
+    epsilon: float,
 ) -> None:
-    def _forward(x: JaxObservations) -> Dict[int, Logits]:
+    def _forward(
+        x: JaxObservations,
+        network_extras: NetworkExtras,
+    ) -> Dict[int, Logits]:
         tree = Tree(
-            network_builder=mlp_builder,
+            catx_network=catx_network_without_extras,
             tree_params=tree_parameters,
         )
 
-        output_logits = tree(x)
+        output_logits = tree(obs=x, network_extras=network_extras)
 
         # Validate the tree has as many neural networks as depth.
         assert jnp.shape(jax.tree_leaves(tree.networks))[0] == tree_parameters.depth
@@ -89,7 +93,11 @@ def test_tree(
 
     forward = hk.transform(_forward)
 
-    _params = forward.init(rng=subkey, x=jax_observations)
+    _params = forward.init(
+        rng=key,
+        x=jax_observations,
+        network_extras={},
+    )
 
     # Validate tree initial params.
     chex.assert_tree_all_finite(_params)
@@ -97,7 +105,9 @@ def test_tree(
     # Query the tree.
     _forward_fn = jax.jit(forward.apply)
     key, subkey = jax.random.split(key)
-    logits = _forward_fn(_params, subkey, jax_observations)
+    logits = _forward_fn(
+        params=_params, x=jax_observations, rng=subkey, network_extras={}
+    )
 
     # Validate the network outputs at each depth.
     logits_shape = jax.tree_map(jnp.shape, logits)

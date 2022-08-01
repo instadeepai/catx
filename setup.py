@@ -1,8 +1,9 @@
 """Install script for setuptools."""
 
-from typing import Any, List
-from setuptools import find_packages, setup
 from pathlib import Path
+from typing import Any, List
+
+from setuptools import find_packages, setup
 
 
 def read(*paths: Any, **kwargs: Any) -> str:

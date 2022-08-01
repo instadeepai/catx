@@ -1,25 +1,64 @@
+from typing import Type
+
+import haiku as hk
+import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
-import jax.numpy as jnp
-from chex import ArrayNumpy
+from chex import ArrayNumpy, PRNGKey
 
-from catx.network_builder import NetworkBuilder
-import haiku as hk
-
+from catx.network_module import CATXHaikuNetwork
 from catx.tree import TreeParameters
-from catx.type_defs import JaxObservations, Observations, Actions, Probabilities
+from catx.type_defs import (
+    Actions,
+    JaxObservations,
+    Logits,
+    NetworkExtras,
+    Observations,
+    Probabilities,
+)
 
 
-class MLPBuilder(NetworkBuilder):
-    def create_network(self, depth: int) -> hk.Module:
-        return hk.nets.MLP([3] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
+class CatxNetworkWithDropoutExtras(CATXHaikuNetwork):
+    def __init__(self, depth: int) -> None:
+        super().__init__(depth)
+        self.network = hk.nets.MLP(
+            [3] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+        )
+
+    def __call__(
+        self,
+        obs: Observations,
+        network_extras: NetworkExtras,
+    ) -> Logits:
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
+
+
+class CatxNetworkWithoutExtras(CATXHaikuNetwork):
+    def __init__(self, depth: int) -> None:
+        super().__init__(depth)
+        self.network = hk.nets.MLP(
+            [3] + [2 ** (self.depth + 1)], name=f"mlp_depth_{self.depth}"
+        )
+
+    def __call__(
+        self,
+        obs: Observations,
+        network_extras: NetworkExtras,
+    ) -> Logits:
+        return self.network(obs)
 
 
 @pytest.fixture
-def mlp_builder() -> MLPBuilder:
-    builder = MLPBuilder()
+def catx_network_without_extras() -> Type[CATXHaikuNetwork]:
+    return CatxNetworkWithoutExtras
 
-    return builder
+
+@pytest.fixture
+def catx_network_with_dropout_extras() -> Type[CATXHaikuNetwork]:
+    return CatxNetworkWithDropoutExtras
 
 
 @pytest.fixture
@@ -67,3 +106,8 @@ def costs() -> ArrayNumpy:
 @pytest.fixture
 def epsilon() -> float:
     return 0.0
+
+
+@pytest.fixture
+def key() -> PRNGKey:
+    return jax.random.PRNGKey(42)
