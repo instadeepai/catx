@@ -414,7 +414,6 @@ class CATX:
                 )
                 return tree.networks[depth](
                     obs=x,
-                    key=hk.next_rng_key(),
                     network_extras=network_extras,
                 ).reshape(x.shape[0], n_leafs // 2, 2)
 

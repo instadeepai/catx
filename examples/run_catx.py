@@ -3,7 +3,6 @@ from typing import List
 import haiku as hk
 import jax
 import optax
-from chex import PRNGKey
 from jax import numpy as jnp
 from catx.catx import CATX
 from catx.network_module import CATXHaikuNetwork
@@ -28,10 +27,11 @@ class MyCATXNetwork(CATXHaikuNetwork):
     def __call__(
         self,
         obs: Observations,
-        key: PRNGKey,
         network_extras: NetworkExtras,
     ) -> Logits:
-        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
 
 
 def main() -> None:

@@ -67,7 +67,6 @@ import time
 from typing import List
 import haiku as hk
 import jax
-from chex import PRNGKey
 import optax
 from jax import numpy as jnp
 from catx.catx import CATX
@@ -88,11 +87,11 @@ class MyCATXNetwork(CATXHaikuNetwork):
     def __call__(
         self,
         obs: Observations,
-        key: PRNGKey,
         network_extras: NetworkExtras,
     ) -> Logits:
-        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
-
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
 
 def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w

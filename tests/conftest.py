@@ -30,10 +30,11 @@ class CatxNetworkWithDropoutExtras(CATXHaikuNetwork):
     def __call__(
         self,
         obs: Observations,
-        key: PRNGKey,
         network_extras: NetworkExtras,
     ) -> Logits:
-        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
 
 
 class CatxNetworkWithoutExtras(CATXHaikuNetwork):
@@ -46,7 +47,6 @@ class CatxNetworkWithoutExtras(CATXHaikuNetwork):
     def __call__(
         self,
         obs: Observations,
-        key: PRNGKey,
         network_extras: NetworkExtras,
     ) -> Logits:
         return self.network(obs)

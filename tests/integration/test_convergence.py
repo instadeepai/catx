@@ -2,7 +2,6 @@ from typing import List, Tuple, Optional
 import jax
 import optax
 import pytest
-from chex import PRNGKey
 from jax import numpy as jnp
 import haiku as hk
 import tensorflow as tf
@@ -68,10 +67,11 @@ class MyCATXNetwork(CATXHaikuNetwork):
     def __call__(
         self,
         obs: Observations,
-        key: PRNGKey,
         network_extras: NetworkExtras,
     ) -> Logits:
-        return self.network(obs, dropout_rate=network_extras["dropout_rate"], rng=key)
+        return self.network(
+            obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
+        )
 
 
 @pytest.mark.parametrize("dataset_id_loss", [(41540, 0.20), (42495, 0.08), (197, 0.15)])

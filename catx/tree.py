@@ -123,7 +123,6 @@ class Tree(hk.Module):
             n_leafs = 2 ** (i + 1)
             c = self.networks[i](
                 obs=obs,
-                key=hk.next_rng_key(),
                 network_extras=network_extras,
             ).reshape(-1, n_leafs // 2, 2)
             logits[i] = c
