@@ -49,27 +49,11 @@ def catx(
 
 @pytest.fixture
 def catx_init(
-    custom_network_without_extras: Type[CustomHaikuNetwork],
+    catx: CATX,
     jax_observations: JaxObservations,
     epsilon: float,
     key: PRNGKey,
-    request: pytest.FixtureRequest = None,
 ) -> Tuple[CATX, CATXState]:
-    if not request:
-        action_min = 0.0
-        action_max = 1.0
-    else:
-        action_min = request.param[0]
-        action_max = request.param[1]
-
-    catx = CATX(
-        custom_network=custom_network_without_extras,
-        optimizer=optax.adam(learning_rate=0.01),
-        discretization_parameter=4,
-        bandwidth=1.5 / 4,
-        action_min=action_min,
-        action_max=action_max,
-    )
 
     state = catx.init(obs=jax_observations, epsilon=epsilon, key=key)
 
@@ -102,40 +86,23 @@ def catx_with_dropout_extras(
 
 @pytest.fixture
 def catx_init_with_extras(
-    custom_network_with_dropout_extras: Type[CustomHaikuNetwork],
+    catx_with_dropout_extras: CATX,
     jax_observations: JaxObservations,
     epsilon: float,
     key: PRNGKey,
-    request: pytest.FixtureRequest = None,
 ) -> Tuple[CATX, CATXState]:
-    if not request:
-        action_min = 0.0
-        action_max = 1.0
-    else:
-        action_min = request.param[0]
-        action_max = request.param[1]
-
-    catx = CATX(
-        custom_network=custom_network_with_dropout_extras,
-        optimizer=optax.adam(learning_rate=0.01),
-        discretization_parameter=4,
-        bandwidth=1.5 / 4,
-        action_min=action_min,
-        action_max=action_max,
-    )
 
     network_extras = {"dropout_rate": 0.2}
-    state = catx.init(
+    state = catx_with_dropout_extras.init(
         obs=jax_observations, epsilon=epsilon, key=key, network_extras=network_extras
     )
 
-    return catx, state
+    return catx_with_dropout_extras, state
 
 
 @pytest.fixture
 def create_forward_fn_mock(mocker: MockerFixture) -> MagicMock:
-    mk = mocker.patch("catx.catx.CATX._create_forward_fn")
-    return mk  # type: ignore
+    return mocker.patch("catx.catx.CATX._create_forward_fn")  # type: ignore
 
 
 @pytest.fixture
@@ -147,21 +114,10 @@ def create_forward_single_depth_fns_mock(mocker: MockerFixture) -> MagicMock:
 
 
 @pytest.fixture
-def update_mock(mocker: MockerFixture) -> MagicMock:
-    mk = mocker.patch("catx.catx.CATX._update")
-    mk.return_value = MagicMock(), MagicMock(), MagicMock()
-    return mk  # type: ignore
-
-
-@pytest.fixture
-def init_mock(mocker: MockerFixture) -> MagicMock:
-    return mocker.patch("catx.catx.CATX._init")  # type: ignore
-
-
-@pytest.fixture
 def init_opt_states_mock(mocker: MockerFixture) -> MagicMock:
     mk = mocker.patch("catx.catx.CATX._init_opt_states")
     mk.return_value = MagicMock()
+
     return mk  # type: ignore
 
 

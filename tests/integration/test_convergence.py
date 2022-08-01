@@ -100,21 +100,19 @@ def test_catx_convergence(dataset_id_loss: Tuple[int, float]) -> None:
             break
 
         if i == 0:
-            network_extras = {"dropout_rate": 0.2}
+            network_extras = {"dropout_rate": 0.0}
             state = catx.init(
                 obs=obs, epsilon=epsilon, key=key, network_extras=network_extras
             )
 
-        state.network_extras["dropout_rate"] = 0.2
+        state.network_extras["dropout_rate"] = 0.0
         actions, probabilities, state = catx.sample(
             obs=obs, epsilon=epsilon, state=state
         )
-        actions = np.array(actions)
-        probabilities = np.array(probabilities)
 
         costs = environment.get_costs(actions=actions)
 
-        state.network_extras["dropout_rate"] = 0.0
+        state.network_extras["dropout_rate"] = 0.2
         state = catx.learn(
             obs=obs,
             actions=actions,

@@ -16,11 +16,10 @@ from sklearn.datasets import fetch_openml
 import numpy as np
 from catx.type_defs import Actions, Costs, Observations
 
+
 class BlackFridayEnvironment:
     def __init__(self, batch_size: int = 10) -> None:
-        self.x, self.y = fetch_openml(
-            data_id=41540, as_frame=False, return_X_y=True
-        )
+        self.x, self.y = fetch_openml(data_id=41540, as_frame=False, return_X_y=True)
         rows_with_nan_idx = np.argwhere(np.isnan(self.x))[:, 0]
         self.x = np.delete(self.x, rows_with_nan_idx, axis=0)
         self.y = np.delete(self.y, rows_with_nan_idx, axis=0)
@@ -125,21 +124,19 @@ def main() -> None:
             break
 
         if i == 0:
-            network_extras = {"dropout_rate": 0.2}
+            network_extras = {"dropout_rate": 0.0}
             state = catx.init(
                 obs=obs, epsilon=epsilon, key=key, network_extras=network_extras
             )
 
-        state.network_extras["dropout_rate"] = 0.2
+        state.network_extras["dropout_rate"] = 0.0
         actions, probabilities, state = catx.sample(
             obs=obs, epsilon=epsilon, state=state
         )
-        actions = np.array(actions)
-        probabilities = np.array(probabilities)
 
         costs = environment.get_costs(actions=actions)
 
-        state.network_extras["dropout_rate"] = 0.0
+        state.network_extras["dropout_rate"] = 0.2
         state = catx.learn(
             obs=obs,
             actions=actions,
@@ -156,6 +153,7 @@ def main() -> None:
     plt.show()
 
     print(f"CATX training took {time.time() - start_time:.1f}s")
+
 
 if __name__ == "__main__":
     main()

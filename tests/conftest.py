@@ -52,11 +52,6 @@ class CustomNetworkWithoutExtras(CustomHaikuNetwork):
         return self.network(obs)
 
 
-# class MLPBuilder(NetworkBuilder):
-#     def create_network(self, depth: int) -> hk.Module:
-#         return hk.nets.MLP([3] + [2 ** (depth + 1)], name=f"mlp_depth_{depth}")
-
-
 @pytest.fixture
 def custom_network_without_extras() -> Type[CustomHaikuNetwork]:
     return CustomNetworkWithoutExtras
@@ -116,6 +111,4 @@ def epsilon() -> float:
 
 @pytest.fixture
 def key() -> PRNGKey:
-    key = jax.random.PRNGKey(42)
-    key, subkey = jax.random.split(key, num=2)
-    return key
+    return jax.random.PRNGKey(42)
