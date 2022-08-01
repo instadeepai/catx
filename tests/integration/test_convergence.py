@@ -1,12 +1,14 @@
 from typing import List, Tuple, Optional
+
+import haiku as hk
 import jax
+import numpy as np
 import optax
 import pytest
-from jax import numpy as jnp
-import haiku as hk
 import tensorflow as tf
-import numpy as np
+from jax import numpy as jnp
 from sklearn.datasets import fetch_openml
+
 from catx.catx import CATX
 from catx.network_module import CATXHaikuNetwork
 from catx.type_defs import Actions, Costs, Observations, NetworkExtras, Logits

@@ -1,9 +1,9 @@
 from typing import Dict, Optional, TYPE_CHECKING, Type
 
 import haiku as hk
+import jax.numpy as jnp
 import numpy as np
 from chex import Array
-import jax.numpy as jnp
 
 from catx.network_module import CATXHaikuNetwork
 from catx.type_defs import Logits, NetworkExtras

@@ -1,14 +1,13 @@
 from typing import Type
 
+import haiku as hk
 import jax
+import jax.numpy as jnp
 import numpy as np
 import pytest
-import jax.numpy as jnp
 from chex import ArrayNumpy, PRNGKey
 
 from catx.network_module import CATXHaikuNetwork
-import haiku as hk
-
 from catx.tree import TreeParameters
 from catx.type_defs import (
     JaxObservations,

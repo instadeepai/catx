@@ -5,8 +5,8 @@ import chex
 import haiku as hk
 import jax
 import optax
-from jax import numpy as jnp
 from chex import Array
+from jax import numpy as jnp
 from jax.stages import Wrapped
 
 from catx.network_module import CATXHaikuNetwork

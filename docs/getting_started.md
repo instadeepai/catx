@@ -9,11 +9,14 @@ based on the feature of that individual, i.e., context.
 
 ## Environment class
 For simplicity, we normalize the feature and action spaces.
+
 ```python
 from typing import Optional
+
+import numpy as np
 import tensorflow as tf
 from sklearn.datasets import fetch_openml
-import numpy as np
+
 from catx.type_defs import Actions, Costs, Observations
 
 
@@ -51,7 +54,7 @@ class BlackFridayEnvironment:
 
     def _normalize_data(self, data: np.ndarray) -> np.ndarray:
         return (data - np.min(data, axis=0)) / (
-            np.max(data, axis=0) - np.min(data, axis=0)
+                np.max(data, axis=0) - np.min(data, axis=0)
         )
 ```
 
@@ -65,14 +68,16 @@ In this example, we use a multilayer perceptron (MLP) network with dropouts.
 # CATX imports
 import time
 from typing import List
+
 import haiku as hk
 import jax
+import matplotlib.pyplot as plt
+import numpy as np
 import optax
 from jax import numpy as jnp
+
 from catx.catx import CATX
 from catx.network_module import CATXHaikuNetwork
-import numpy as np
-import matplotlib.pyplot as plt
 from catx.type_defs import Observations, NetworkExtras, Logits
 
 
@@ -85,13 +90,14 @@ class MyCATXNetwork(CATXHaikuNetwork):
         )
 
     def __call__(
-        self,
-        obs: Observations,
-        network_extras: NetworkExtras,
+            self,
+            obs: Observations,
+            network_extras: NetworkExtras,
     ) -> Logits:
         return self.network(
             obs, dropout_rate=network_extras["dropout_rate"], rng=hk.next_rng_key()
         )
+
 
 def moving_average(x: List[float], w: int) -> np.ndarray:
     return np.convolve(x, np.ones(w), "valid") / w

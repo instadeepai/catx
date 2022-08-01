@@ -1,7 +1,9 @@
 from unittest.mock import patch
-from chex import PRNGKey
-from catx.network_module import CATXHaikuNetwork
+
 import haiku as hk
+from chex import PRNGKey
+
+from catx.network_module import CATXHaikuNetwork
 
 
 @patch("catx.network_module.CATXHaikuNetwork.__abstractmethods__", set())

@@ -1,11 +1,11 @@
 from typing import Dict, Type
 
 import chex
-import jax
 import haiku as hk
+import jax
 import jax.numpy as jnp
-import pytest
 import numpy as np
+import pytest
 from chex import assert_type
 
 from catx.network_module import CATXHaikuNetwork

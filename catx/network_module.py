@@ -1,5 +1,7 @@
 from abc import abstractmethod
+
 import haiku as hk
+
 from catx.type_defs import Observations, NetworkExtras, Logits
 
 
@@ -17,7 +19,6 @@ class CATXHaikuNetwork(hk.Module):
         """
         super().__init__()
         self.depth = depth
-        pass
 
     @abstractmethod
     def __call__(
