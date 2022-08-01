@@ -22,6 +22,19 @@ from catx.type_defs import (
 )
 
 
+def instantiate_catx(
+    action_min: float, action_max: float, catx_network: Type[CATXHaikuNetwork]
+) -> CATX:
+    return CATX(
+        catx_network=catx_network,
+        optimizer=optax.adam(learning_rate=0.01),
+        discretization_parameter=4,
+        bandwidth=1.5 / 4,
+        action_min=action_min,
+        action_max=action_max,
+    )
+
+
 @pytest.fixture
 def catx(
     catx_network_without_extras: Type[CATXHaikuNetwork],
@@ -34,16 +47,7 @@ def catx(
         action_min = request.param[0]
         action_max = request.param[1]
 
-    catx = CATX(
-        catx_network=catx_network_without_extras,
-        optimizer=optax.adam(learning_rate=0.01),
-        discretization_parameter=4,
-        bandwidth=1.5 / 4,
-        action_min=action_min,
-        action_max=action_max,
-    )
-
-    return catx
+    return instantiate_catx(action_min, action_max, catx_network_without_extras)
 
 
 @pytest.fixture
@@ -71,16 +75,7 @@ def catx_with_dropout_extras(
         action_min = request.param[0]
         action_max = request.param[1]
 
-    catx = CATX(
-        catx_network=catx_network_with_dropout_extras,
-        optimizer=optax.adam(learning_rate=0.01),
-        discretization_parameter=4,
-        bandwidth=1.5 / 4,
-        action_min=action_min,
-        action_max=action_max,
-    )
-
-    return catx
+    return instantiate_catx(action_min, action_max, catx_network_with_dropout_extras)
 
 
 @pytest.fixture
