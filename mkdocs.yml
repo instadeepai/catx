@@ -69,6 +69,6 @@ nav:
   - API Reference:
       - tree: api/tree.md
       - catx: api/catx.md
-      - network builder: api/network_builder.md
+      - network module: api/network_module.md
 
 copyright: InstaDeep © 2022 Copyright, all rights reserved.
