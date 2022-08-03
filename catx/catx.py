@@ -196,7 +196,7 @@ class CATX:
         """Initializes the parameters of tree's neural networks,
         the forward functions, and the optimizer states.
 
-        This functions can only be called once. It is called the first time a CATX instance is used.
+        This function can only be called once. It is called the first time a CATX instance is used.
 
         Args:
             obs: the observations, i.e., batched contexts.
@@ -251,7 +251,7 @@ class CATX:
         network_extras: NetworkExtras,
     ) -> Tuple[hk.Params, Wrapped]:
         """Creates a jitted forward function of the tree
-        and initializes the parameters of tree's neural networks.
+        and initializes the parameters of the tree's neural networks.
 
         Args:
             obs: the observations, i.e., batched contexts.
@@ -269,7 +269,7 @@ class CATX:
             epsilon: float,
             network_extras: NetworkExtras,
         ) -> Tuple[JaxActions, JaxProbabilities]:
-            """This forward function defines how the tree is traversed and how actions sampled:
+            """This forward function defines how the tree is traversed and how actions are sampled:
                 - All the tree logits are queried (one set of pairwise logits per tree depth).
                 - The tree is traversed by following the max of the logits at each
                   tree depth until an action centroid is reached.
@@ -369,7 +369,7 @@ class CATX:
         key: chex.PRNGKey,
         network_extras: NetworkExtras,
     ) -> Tuple[Dict[int, Wrapped], Dict[int, hk.Params]]:
-        """Creates a dictionary of jitted forward functions, one per neural networks at each tree depth
+        """Creates a dictionary of jitted forward functions, one per neural network at each tree depth
         and initializes the parameters of these neural networks.
 
         Args:
@@ -493,7 +493,7 @@ class CATX:
         rng_key: chex.PRNGKey,
         network_extras: NetworkExtras,
     ) -> JaxLoss:
-        """Computes the loss function a given depth.
+        """Computes the loss function at a given depth.
 
         Args:
             layer_params: a dictionary of neural network parameters with tree depth as key.
