@@ -28,14 +28,13 @@ and much more on CATX and its inner workings.
 
 
 ## Citing CATX
-To cite this repository:
 
 ```
 @software{catx2022github,
   author = {Wissam Bejjani and Cyprien Courtot},
   title = {CATX: contextual bandits library for Continuous Action Trees with smoothing in JAX},
   url = {https://github.com/instadeepai/catx/},
-  version = {0.1.4},
+  version = {0.2.0},
   year = {2022},
 }
 ```

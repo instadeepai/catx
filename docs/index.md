@@ -19,3 +19,20 @@ Contextual bandits settings, where the exploration-exploitation trade-off needs 
 can be found in many industries and use cases.
 CATX offers a valuable boost to this type of problem, by implementing contextual bandits with continuous actions in JAX,
 and allowing custom neural networks in the tree structure of the CATS algorithm.
+
+
+## Citing CATX
+
+```
+@software{catx2022github,
+  author = {Wissam Bejjani and Cyprien Courtot},
+  title = {CATX: contextual bandits library for Continuous Action Trees with smoothing in JAX},
+  url = {https://github.com/instadeepai/catx/},
+  version = {0.2.0},
+  year = {2022},
+}
+```
+
+In this bibtex entry, the version number is intended to be from
+[`catx/VERSION`](https://github.com/instadeepai/catx/blob/main/catx/VERSION),
+and the year corresponds to the project's open-source release.
