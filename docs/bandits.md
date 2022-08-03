@@ -1,41 +1,41 @@
 # From bandits to contextual Bandits with continuous actions
 
-## What is bandits?
-The bandits problem consist of finding the action to execute among several actions
-that entails the lowest cost (or highest reward).
+## What are bandits?
+The bandits' problem consists of finding the action to execute among several actions
+that entail the lowest cost (or highest reward).
 
-The classic bandits example goes as follows:
+The classic bandits' example goes as follows:
 
-In casino far far away, there exists multiple slot machines (also known as multi-arm bandit).
+In a casino far far away, there exist multiple slot machines (also known as multi-armed bandit).
 Each machine represents an action. The illustrated example shows 4 machines, i.e., 4 actions.
 Some machines have higher winning probabilities.
 For example, the blue machine could have a win probability of 2% while the green machine 2.5%, the yellow 1.5%, and the red 3%.
-It is most advantagous to always play the red machine but these probabilities are not known to the player.
-The goal is to find the best machine to play while minimizing the amount of time or money waisted on suboptimal machines.
-Most approaches to this problem starts by randomly trying machines and keeping track of each machine win rate,
-then gradually converge to the machine which appears to have the highest winning probability.
+It is most advantageous to always play the red machine but these probabilities are not known to the player.
+The goal is to find the best machine to play while minimizing the amount of time or money wasted on suboptimal machines.
+Most approaches to this problem start by randomly trying machines and keeping track of each machine's win rate,
+then gradually converging to the machine which appears to have the highest winning probability.
 
 ![bandits](img/bandits.png)
 
 
 ---
-A/B testing is one of the simplest approaches to tackle the bandits problem:
+A/B testing is one of the simplest approaches to tackle the bandits' problem:
 
 * step 1: try each machine a fixed number of times
 
-* step 2: always play the machine with the highest win rate as unraveled  in step 1
+* step 2: always play the machine with the highest win rate as unravelled in step 1
 
 Note: A/B testing focuses on simplicity
-at the expense of not minimizing the amount of time or money waisted on suboptimal actions.
+at the expense of not minimizing the amount of time or money wasted on suboptimal actions.
 ---
 
-The same bandits problem can be found under different domains.
-For example, in an online shopping, the pricing algorithm has to select the profit margin to add on certain product
+The same bandits' problem can be found under different domains.
+For example, in an online shopping store, the pricing algorithm has to select the profit margin to add on certain product
 from 4 available profit margin options, say 2%, 4%, 6%, and 8%.
 A too high of a margin will drive customers away and a low margin might be missing a profit opportunity.
 
 
-## What is contextual bandits?
+## What are contextual bandits?
 Contextual bandits are similar the previous bandits problem with a small difference.
 The cost (or reward) associated to an action is also conditioned on the current context of the environment.
 The contextexual information is also available to the dacision maker.
@@ -52,23 +52,23 @@ Different machine are affected differently by the context.
 In the online shopping example, the contextual information could be the location and age
 of the customer.
 
-Solving a contextual bandits problem often involves learning a condtional probabilities over the actions
+Solving a contextual bandits' problem often involves learning conditional probabilities over the actions
 conditioned by the context.
 
-## What is contextual bandits with continuous actions?
+## What are contextual bandits with continuous actions?
 From an application perspective, contextual bandits with continuous actions
 are the more general case of contextual bandits where the actions
 are defined over a continuous space.
 
-Also following on the slot machine example, now instead of having 4 machines, i.e., actions, to chose from,
-there is only one slot machine with an action selection knob that can be rotated between 0 and 180 degree.
+Also following the slot machine example, now instead of having 4 machines, i.e., actions, to choose from,
+there is only one slot machine with an action selection knob that can be rotated anywhere between 0 and 180 degrees.
 The winning probability over the continuous action space is also conditioned by the temperature and humidity context.
 
 ![contextual_bandits_cont_act](img/contextual_bandits_cont_act.png)
 
-In the online shopping example, the action range is now defined over a continuous margin value between 2% and 8%.
-The continuous action space give more freedom to the pricing algorithm to finetune the margin
-to minimize the regret of missing profit opportunities.
+In the online shopping store example, the action range is now defined over a continuous margin value between 2% and 8%.
+The continuous action space gives more freedom to the pricing algorithm to finetune the margin
+to **minimize the regret** of missing profit opportunities or driving customers away.
 
 ## CATX and the online shopping example:
 Below is a visual example of using CATX to learn the best margin to apply in the online shopping example.

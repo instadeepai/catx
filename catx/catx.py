@@ -33,7 +33,7 @@ else:
 
 @dataclass
 class CATXState:
-    """Holds the CATX's training state."""
+    """Holds the CATX's training state and extra parameterization for the networks."""
 
     params: hk.Params
     depth_params: Dict[int, hk.Params]

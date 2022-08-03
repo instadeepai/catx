@@ -2,14 +2,14 @@
 
 # CATX: contextual bandits for continuous actions using trees with smoothing in JAX
 
-CATX is library for training and using a contextual bandits in a continuous action space.
+CATX is a library for training and using contextual bandits in a continuous action space.
 
 
 CATX builds on the work presented in
 ["Efficient Contextual Bandits with Continuous Actions (CATS)"](https://arxiv.org/pdf/2006.06040.pdf) by Majzoubi et al.
 CATX brings forth the freedom to implement custom neural network architectures
 as decision agents within the learning algorithm.
-It allows for grater scalability and context modalities while
+It allows for greater scalability and context modalities while
 also leveraging the computational speed of [JAX](https://github.com/google/jax).
 
 ## Target users
