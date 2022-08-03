@@ -61,7 +61,11 @@ class BlackFridayEnvironment:
 ## Training loop
 One of the main advantages of CATX is the flexibility
 of defining a custom neural network architecture within the tree.
-In this example, we use a multilayer perceptron (MLP) network with dropouts.
+
+The custom neural network must be a [JAX/Haiku](https://github.com/deepmind/dm-haiku)
+network which inherits from CATXHaikuNetwork.
+In this example, we use a multilayer perceptron (MLP)
+network with dropouts that are activated during the learning step.
 > **_IMPORTANT:_**  The number of neurons at the output layer should be 2**(depth+1)
 
 ```python

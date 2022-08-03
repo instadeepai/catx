@@ -22,7 +22,7 @@ class TreeParameters:
         bandwidth: the bucket half width covered by action centroid.
         discretization_parameter: the number of action centroids.
         action_space: the range from which actions can be generated.
-        depth: number layers in the tree.
+        depth: number of layers in the tree.
         spaces: an array indicating the start and end range of each action centroid.
         volumes: an array indicating the bandwidth of around each action centroid.
         probabilities: h-smoothing of policy π_t (one over volumes).
@@ -55,7 +55,7 @@ class TreeParameters:
             discretization_parameter & (discretization_parameter - 1)
         ):
             raise ValueError(
-                "discretization_parameter must be power of 2 number and larger than 1."
+                "discretization_parameter must be a power of 2 number and larger than 1."
             )
 
         action_space = jnp.linspace(

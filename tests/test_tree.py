@@ -51,7 +51,7 @@ def test_tree_parameters__discretization_parameter(
 ) -> None:
     with pytest.raises(
         ValueError,
-        match="discretization_parameter must be power of 2 number and larger than 1.",
+        match="discretization_parameter must be a power of 2 number and larger than 1.",
     ):
         TreeParameters.construct(
             bandwidth=1 / 8, discretization_parameter=discretization_parameter

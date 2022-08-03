@@ -1,12 +1,12 @@
 ![Logo_CatX_Final_PNG](docs/img/Logo_CatX_Final_PNG.png)
 
-CATX is library for training and using a contextual bandits in a continuous action space.
+CATX is a library for training and using contextual bandits in a continuous action space.
 
 CATX builds on the work presented in
 ["Efficient Contextual Bandits with Continuous Actions (CATS)"](https://arxiv.org/pdf/2006.06040.pdf) by Majzoubi et al.
 CATX brings forth the freedom to implement custom neural network architectures
 as decision agents within the learning algorithm.
-It allows for grater scalability and context modalities while
+It allows for greater scalability and context modalities while
 also leveraging the computational speed of [JAX](https://github.com/google/jax).
 
 ## Target users
@@ -20,7 +20,7 @@ and allowing custom neural networks in the tree structure of the CATS algorithm.
 
 
 ## Documentation
-Go to [documentations](https://catx.readthedocs.io/en/main/)
+Go to [documentation](https://catx.readthedocs.io/en/main/)
 to find everything you need to know about CATX
 from the [installation](https://catx.readthedocs.io/en/main/installation/) with `pip install catx`
 to a quick [getting started](https://catx.readthedocs.io/en/main/getting_started/) example
@@ -28,14 +28,13 @@ and much more on CATX and its inner workings.
 
 
 ## Citing CATX
-To cite this repository:
 
 ```
 @software{catx2022github,
   author = {Wissam Bejjani and Cyprien Courtot},
   title = {CATX: contextual bandits library for Continuous Action Trees with smoothing in JAX},
   url = {https://github.com/instadeepai/catx/},
-  version = {0.1.4},
+  version = {0.2.0},
   year = {2022},
 }
 ```
