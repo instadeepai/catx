@@ -6,7 +6,7 @@ The simplest way to install CATX is through PyPI:
 
 We recommend using either Docker, Singularity, or conda to use the repository.
 
-### step 2 \[Optional\]: JAX GPU installation
+### step 2 [Optional]: JAX GPU installation
 CATX installation in step 1 uses JAX on CPU.
 
 To unleash the full speed of CATX and have access to a GPU, a GPU version of JAX must be installed.
