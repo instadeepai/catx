@@ -81,7 +81,7 @@ def test_tree(
             tree_params=tree_parameters,
         )
 
-        output_logits = tree(obs=x, network_extras=network_extras)
+        output_logits: Dict[int, Logits] = tree(obs=x, network_extras=network_extras)
 
         # Validate the tree has as many neural networks as depth.
         assert jnp.shape(jax.tree_leaves(tree.networks))[0] == tree_parameters.depth
@@ -116,3 +116,13 @@ def test_tree(
         assert logits_shape[d] == (jnp.shape(jax_observations)[0], 2**d, 2)
 
     chex.assert_tree_all_finite(logits)
+
+
+def test_tree_parameters__probabilities_and_volumes() -> None:
+    tree_param = TreeParameters.construct(bandwidth=1 / 4, discretization_parameter=4)
+
+    expected_volumes = jnp.full_like(tree_param.volumes, 1 / 2)
+    expected_probabilities = jnp.full_like(tree_param.probabilities, 2)
+
+    assert jnp.allclose(tree_param.volumes, expected_volumes)
+    assert jnp.allclose(tree_param.probabilities, expected_probabilities)

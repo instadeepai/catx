@@ -348,6 +348,7 @@ class CATX:
 
             # Scale sampled actions to the environment action range.
             actions = actions * (self._action_max - self._action_min) + self._action_min
+            probabilities /= self._action_max - self._action_min
 
             return actions, probabilities
 
@@ -553,6 +554,7 @@ class CATX:
 
         # Scale actions from the environment action range to the tree action range.
         actions = (actions - self._action_min) / (self._action_max - self._action_min)
+        probabilities *= self._action_max - self._action_min
 
         smooth_costs = self._compute_smooth_costs(
             costs=costs, actions=actions, probabilities=probabilities
