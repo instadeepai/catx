@@ -34,7 +34,7 @@ and much more on CATX and its inner workings.
   author = {Wissam Bejjani and Cyprien Courtot},
   title = {CATX: contextual bandits library for Continuous Action Trees with smoothing in JAX},
   url = {https://github.com/instadeepai/catx/},
-  version = {0.2.0},
+  version = {0.2.1},
   year = {2022},
 }
 ```
