@@ -9,5 +9,5 @@ mkdocstrings-python==0.7.1
 
 pre-commit==2.9.2
 pymdown-extensions==9.5
-python-semantic-release
-twine
+python-semantic-release==7.31.4
+twine==3.8.0

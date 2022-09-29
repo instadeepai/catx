@@ -1,13 +1,13 @@
 # This requirements are for development and testing only, not for production.
-black
-codecov
-coverage
-flake8
-gitchangelog
-isort
-mkdocs
-mypy
-pytest
-pytest-cov
-pytest-mock
-scikit-learn
+black==22.8.0
+codecov==2.1.12
+coverage==6.4.4
+flake8==5.0.4
+gitchangelog==3.0.4
+isort==5.10.1
+mkdocs==1.3.0
+mypy==0.971
+pytest==7.1.3
+pytest-cov==3.0.0
+pytest-mock==3.8.2
+scikit-learn==1.1.2
