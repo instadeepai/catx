@@ -1,6 +1,6 @@
-chex==0.1.5
-dm-haiku==0.0.7
-matplotlib==3.6.0
-numpy==1.23.3
-optax==0.1.3
-tensorflow==2.10.0
+chex~=0.1.5
+dm-haiku~=0.0.7
+matplotlib>=3.3
+numpy>= 1.19, <=1.22.4 # NumPy 1.23.0 breaks autodiff in jax, float0 are being converted to bool.
+optax~=0.1.3
+tensorflow~=2.10.0
