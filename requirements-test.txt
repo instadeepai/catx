@@ -1,13 +1,6 @@
-# This requirements are for development and testing only, not for production.
-black
-codecov
-coverage
-flake8
-gitchangelog
-isort
-mkdocs
-mypy
-pytest
-pytest-cov
-pytest-mock
-scikit-learn
+pytest==7.1.3
+pytest-cov==3.0.0
+pytest-mock==3.8.2
+scikit-learn~=1.1.2
+
+tensorflow~=2.10.0
